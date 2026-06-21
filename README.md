@@ -2,24 +2,21 @@
 AI search algorithms project
 
 Ví dụ state:
-state = [
-    [3, 3, 2, 2],    	# lọ 0
-    [2, 1, 3],       	# lọ 1
-    [3, 2],        		# lọ 2
-    [1, 1,1]]           # lọ 3
+state = [[3, 3, 2, 2],    	# lọ 0
+         [2, 1, 3   ],      # lọ 1
+         [3, 2      ],      # lọ 2
+         [1, 1,1    ]]      # lọ 3
 
-START = [
-    [1, 3, 2, 2],    	# lọ 0
-    [3, 2, 1, 3],       # lọ 1
-    [3, 2, 1, 1],       # lọ 2
-    []]            		# lọ 3
+START = [[1, 3, 2, 2],    	# lọ 0
+         [3, 2, 1, 3],      # lọ 1
+         [3, 2, 1, 1],      # lọ 2
+         [          ]]      # lọ 3
 
-GOAL = [
-    [1, 1, 1, 1],    	# lọ 0
-    [2, 2, 2, 2],       # lọ 1
-    [3, 3, 3, 3],       # lọ 2
-    []]            		# lọ 3
-
+GOAL = [[1, 1, 1, 1],    	# lọ 0
+        [2, 2, 2, 2],       # lọ 1
+        [3, 3, 3, 3],       # lọ 2
+        [          ]]       # lọ 3
+GOAL=A(3,4)=24 (vì số cách sắp xếp 3 màu khác nhau vào 4 lọ là chỉnh hợp chập 3 của 4 phần tử)
 
 Điều kiện: để thực hiện được đổ mực lọ này vào lọ kia thì:
 Tầng trên cùng của cả 2 lọ phải cùng số. 
