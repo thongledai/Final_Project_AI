@@ -1,99 +1,75 @@
-# Số lượng phần tử tối đa trong một lọ và số lọ
+# Số phần tử tối đa trong một lọ
 CAPACITY = 4
-NUM_BOTTLES = 6
+# Số lọ
+QUANTITY = 4
 
 
 # Sao chép trạng thái
 def copy_state(state):
     return [row[:] for row in state]
 
+
 # Chuyển trạng thái từ list sang tuple
 def state_to_tuple(state):
     return tuple(tuple(row) for row in state)
 
-# Lấy vị trí của phần tử trên cùng của một lọ
-def get_top_index(state, bottle):
-    for i in range(CAPACITY-1,-1,-1):
-        if state[bottle][i] is not None:
-            return i
+
+# Lấy vị trí của phần tử trên cùng của lọ i
+def get_top_index(state, i):
+    for j in range(CAPACITY-1,-1,-1):
+        if state[i][j] is not None:
+            return j
     return -1
 
-# Lấy màu của phần tử trên cùng của một lọ
-def get_top_color(state,bottle):
-    top=get_top_index(state,bottle)
-    if top==-1:
+
+# Lấy màu của phần tử trên cùng của lọ i
+def get_top_value(state,i):
+    j=get_top_index(state,i)
+    if j==-1:
         return None
-    return state[bottle][top]
+    else:
+        return state[i][j]
 
-# Kiểm tra xem một lọ có rỗng không
-def is_empty(state,bottle):
-    return get_top_index(state,bottle)==-1
 
-# Kiểm tra xem một lọ có đầy không
-def is_full(state,bottle):
-    return None not in state[bottle]
+# Kiểm tra xem lọ i có rỗng không
+def is_empty(state, i):
+    return get_top_index(state,i)==-1
 
-# Đếm số lượng phần tử rỗng trong một lọ
-def empty_slots(state,bottle):
-    return state[bottle].count(None)
 
-# Đếm số lượng phần tử cùng màu ở trên cùng của một lọ
-def get_count_same_top(state,bottle):
-    top=get_top_index(state,bottle)
-    if top==-1:
+# Kiểm tra xem lọ i có đầy không
+def is_full(state,i):
+    return len(state[i])==CAPACITY
+
+
+# Đếm số lượng phần tử rỗng trong lọ i
+def empty_slots(state,i):
+    return CAPACITY-len(state[i])
+
+
+# Đếm số phần tử cùng màu liên tiếp ở top của lọ i
+def get_count_same_top(state,i):
+    j=get_top_index(state,i)
+    if j==-1:
         return 0
-    color=state[bottle][top]
-    count=0
-    while top>=0 and state[bottle][top]==color:
-        count+=1
-        top-=1
-    return count
+    else:
+        top_color=state[i][j]
+        count=0
+        while j>=0 and state[i][j]==top_color:
+            count+=1
+            j-=1
+        return count
 
-# Kiểm tra xem có thể đổ nước từ lọ src sang lọ dst không
-def can_pour(state,src,dst):
-    if src==dst:
-        return False
-    if is_empty(state,src):
-        return False
-    if is_full(state,dst):
-        return False
-    src_color=get_top_color(state,src)
-    dst_color=get_top_color(state,dst)
-    if dst_color is None:
-        return True
-    return src_color==dst_color
 
-def pour(state,src,dst):
-    if not can_pour(state,src,dst):
-        return None
-    new_state=copy_state(state)
-    color=top_color(new_state,src)
-    count=count_same_top(new_state,src)
-    empty=empty_slots(new_state,dst)
-    move=min(count,empty)
-    for _ in range(move):
-        src_top=get_top(new_state,src)
-        dst_top=get_top(new_state,dst)
-        new_state[src][src_top]=None
-        if dst_top==-1:
-            pos=0
-        else:
-            pos=dst_top+1
-        new_state[dst][pos]=color
-    return new_state
+# Kiểm tra xem trạng thái hiện tại có phải là trạng thái mục tiêu không
+def is_goal(state):
+    for i in state:
+        if len(i) == 0:
+            continue
+        if len(i) != CAPACITY or len(set(i)) != 1:
+            return False
+    return True
 
-def goal_test(state,goal):
-    return state==goal
 
-def solution(node):
-    path=[]
-    actions=[]
-    while node is not None:
-        path.append(node.state)
-        actions.append(node.action)
-        node=node.parent
-    path.reverse()
-    actions.reverse()
-    actions=actions[1:]
-    return path,actions
+
+
 
