@@ -24,16 +24,14 @@ def get_top_index(state, i):
 
 # Lấy màu của phần tử trên cùng của lọ i
 def get_top_value(state,i):
-    j=get_top_index(state,i)
-    if j==-1:
+    if is_empty(state, i):
         return None
-    else:
-        return state[i][j]
+    return state[i][-1]
 
 
 # Kiểm tra xem lọ i có rỗng không
 def is_empty(state, i):
-    return get_top_index(state,i)==-1
+    return len(state[i])==0
 
 
 # Kiểm tra xem lọ i có đầy không
@@ -52,9 +50,9 @@ def get_count_same_top(state,i):
     if j==-1:
         return 0
     else:
-        top_color=state[i][j]
+        top_value=state[i][j]
         count=0
-        while j>=0 and state[i][j]==top_color:
+        while j>=0 and state[i][j]==top_value:
             count+=1
             j-=1
         return count
