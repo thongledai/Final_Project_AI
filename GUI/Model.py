@@ -1,0 +1,1 @@
+# Lưu trạng thái dữ liệu

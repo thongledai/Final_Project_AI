@@ -1,0 +1,1 @@
+# Hàm hỗ trợ hiển thị và kiểm tra dữ liệu
