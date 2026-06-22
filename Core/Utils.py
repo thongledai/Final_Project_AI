@@ -4,6 +4,13 @@ CAPACITY = 4
 QUANTITY = 4
 
 
+# Trạng thái ban đầu
+START = [[1, 3, 2, 2],      # lọ 0
+         [3, 2, 1, 3],      # lọ 1
+         [1, 3, 2, 1],      # lọ 2
+         [          ]]      # lọ 3
+
+
 # Sao chép trạng thái
 def copy_state(state):
     return [row[:] for row in state]

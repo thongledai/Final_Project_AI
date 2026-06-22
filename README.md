@@ -2,14 +2,21 @@
 AI search algorithms project
 
 Ví dụ state:
-state = [[3, 3, 2, 2],    	# lọ 0
+state = [[3, 3, 2, 2],      # lọ 0
          [2, 1, 3   ],      # lọ 1
          [3, 2      ],      # lọ 2
          [1, 1,1    ]]      # lọ 3
 
-START = [[1, 3, 2, 2],    	# lọ 0
+Trạng thái ban đầu không thể giải
+START = [[1, 3, 2, 2],      # lọ 0
          [3, 2, 1, 3],      # lọ 1
          [3, 2, 1, 1],      # lọ 2
+         [          ]]      # lọ 3
+
+Trạng thái ban đầu có thể giải
+START = [[1, 3, 2, 2],      # lọ 0
+         [3, 2, 1, 3],      # lọ 1
+         [1, 3, 2, 1],      # lọ 2
          [          ]]      # lọ 3
 
 GOAL = [[1, 1, 1, 1],       # lọ 0
