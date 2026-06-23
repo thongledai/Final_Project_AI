@@ -1,0 +1,78 @@
+import math
+import random
+import time
+
+from Algorithms.SearchCommon import build_result, child_nodes, heuristic
+from Core.Node import Node
+from Core.Utils import is_goal
+
+
+def simulated_annealing(
+    initial_state,
+    max_steps=5000,
+    start_temperature=10.0,
+    cooling_rate=0.995,
+    seed=None,
+):
+    rng = random.Random(seed)
+    start_time = time.time()
+    current = Node(initial_state)
+    best = current
+    expanded_nodes = 0
+    generated_nodes = 1
+    temperature = start_temperature
+
+    for _ in range(max_steps):
+        if is_goal(current.state):
+            return build_result(current, True, expanded_nodes, generated_nodes, start_time)
+
+        children = child_nodes(current)
+        expanded_nodes += 1
+        generated_nodes += len(children)
+
+        if not children or temperature <= 0.000001:
+            break
+
+        candidate = rng.choice(children)
+        delta = heuristic(current.state) - heuristic(candidate.state)
+
+        if delta > 0 or rng.random() < math.exp(delta / temperature):
+            current = candidate
+            if heuristic(current.state) < heuristic(best.state):
+                best = current
+
+        temperature *= cooling_rate
+
+    return build_result(best, is_goal(best.state), expanded_nodes, generated_nodes, start_time)
+
+
+def Simulated_Annealing(
+    initial_state,
+    max_steps=5000,
+    start_temperature=10.0,
+    cooling_rate=0.995,
+    seed=None,
+):
+    return simulated_annealing(
+        initial_state,
+        max_steps,
+        start_temperature,
+        cooling_rate,
+        seed,
+    )
+
+
+def search(
+    initial_state,
+    max_steps=5000,
+    start_temperature=10.0,
+    cooling_rate=0.995,
+    seed=None,
+):
+    return simulated_annealing(
+        initial_state,
+        max_steps,
+        start_temperature,
+        cooling_rate,
+        seed,
+    )

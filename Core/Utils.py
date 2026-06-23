@@ -16,10 +16,7 @@ def state_to_tuple(state):
 
 # Lấy vị trí của phần tử trên cùng của lọ i
 def get_top_index(state, i):
-    for j in range(CAPACITY-1,-1,-1):
-        if state[i][j] is not None:
-            return j
-    return -1
+    return len(state[i]) - 1
 
 
 # Lấy màu của phần tử trên cùng của lọ i
