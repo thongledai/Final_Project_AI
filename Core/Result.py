@@ -5,10 +5,10 @@ from Core.Utils import *
 
 @dataclass
 class SearchResult:
-    success: bool                    # Tìm thấy lời giải không
-    path: List[tuple] = None               # Danh sách hành động từ start đến end
-    states: List[list] = None               # Danh sách trạng thái
-    final_state: list = None                # Trạng thái cuối cùng
+    success: bool                        # Tìm thấy lời giải không
+    path: List[tuple] = None             # Danh sách hành động từ start đến end
+    states: List[list] = None            # Danh sách trạng thái
+    final_state: list = None             # Trạng thái cuối cùng
     cost: float = 0                      # Tổng cost
     expanded_nodes: int = 0              # Số node mở rộng
     generated_nodes: int = 0             # Số node sinh ra
