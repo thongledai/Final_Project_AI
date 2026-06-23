@@ -1,12 +1,13 @@
 from Core.Utils import START
-from Algorithms.UninformedSearch.BreadthFirstSearch import BFS 
+from Algorithms.UninformedSearch.DepthFirstSearch import DFS 
+from Algorithms.UninformedSearch.IterativeDeepeningSearch import IDS
 
 if __name__ == "__main__":
-    # Chạy thuật toán BFS
-    result = BFS(START)
+    # Chạy thuật toán DFS
+    result = IDS(START)
     
     # In kết quả chứa trong đối tượng Solution ra terminal
-    print("=== KẾT QUẢ TÌM KIẾM BFS ===")
+    print("\n=== KẾT QUẢ TÌM KIẾM IDS ===")
     print(f"- Success          : {result.success}")
     print(f"- Path             : {result.path}")
     print(f"- States           : {result.states}")
