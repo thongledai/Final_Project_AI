@@ -10,7 +10,7 @@ if __name__ == "__main__":
     print(f"- Success          : {result.success}")
     print(f"- Path             : {result.path}")
     print(f"- States           : {result.states}")
-    print(f"- Final state      : {result.final_state}")
+    print(f"- Last state       : {result.last_state}")
     print(f"- Cost             : {result.cost}")
     print(f"- Generated states : {result.generated_states}")
     print(f"- Depth            : {result.depth}")
