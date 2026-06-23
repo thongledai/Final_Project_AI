@@ -12,7 +12,7 @@ def check_action(state,i1, i2):
 
 
 # Lấy danh sách các hành động có thể thực hiện từ trạng thái hiện tại (tối đa: A(2,4)=12)
-def actions(state):
+def get_actions(state):
     result=[]
     for i1 in range(QUANTITY):
         for i2 in range(QUANTITY):

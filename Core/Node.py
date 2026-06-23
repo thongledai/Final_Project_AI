@@ -24,6 +24,11 @@ class Node:
         return self.state
     
 
+    # Trả về chi phí
+    def get_cost(self):
+        return self.cost
+    
+
     # Trả về state từ gốc đến node hiện tại
     def get_states(self):
         path = []
