@@ -23,6 +23,7 @@ def DFS(START):
         actions = get_actions(node.state)
         for action in actions:
             child = node.expand(action)
+            
             if child.state not in explored and child not in frontier:
                 if is_goal(child.state):
                     return Solution(True, child.get_path(), child.get_states(), child.get_state(), child.get_cost(), len(explored) + len(frontier), child.get_depth(), time.time()-start_time)
