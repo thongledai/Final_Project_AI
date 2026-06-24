@@ -28,15 +28,12 @@ class Node:
     def get_cost(self):
         return self.cost
     
-
-<<<<<<< HEAD
-=======
+    
     #Trả về node cha
     def get_parent(self):
         return self.parent
     
 
->>>>>>> Thong
     # Trả về state từ gốc đến node hiện tại
     def get_states(self):
         path = []
