@@ -5,7 +5,7 @@ from Core.Node import Node
 from Core.Utils import is_goal, state_to_tuple
 
 
-def steepest_ascent_hill_climbing(initial_state, max_steps=1000):
+def Steepest_ascent_hill_climbing(initial_state, max_steps=1000):
     start_time = time.time()
     current = Node(initial_state)
     seen = {state_to_tuple(initial_state)}
@@ -35,9 +35,5 @@ def steepest_ascent_hill_climbing(initial_state, max_steps=1000):
     return build_result(current, is_goal(current.state), expanded_nodes, generated_nodes, start_time)
 
 
-def Steepest_Ascent_Hill_Climbing(initial_state, max_steps=1000):
-    return steepest_ascent_hill_climbing(initial_state, max_steps)
-
-
-def search(initial_state, max_steps=1000):
-    return steepest_ascent_hill_climbing(initial_state, max_steps)
+def Search(initial_state, max_steps=1000):
+    return Steepest_ascent_hill_climbing(initial_state, max_steps)

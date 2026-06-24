@@ -5,7 +5,7 @@ from Core.Node import Node
 from Core.Utils import is_goal, state_to_tuple
 
 
-def local_beam_search(initial_state, beam_width=3, max_steps=1000):
+def Local_beam_search(initial_state, beam_width=3, max_steps=1000):
     start_time = time.time()
     start = Node(initial_state)
     beam = [start]
@@ -44,9 +44,5 @@ def local_beam_search(initial_state, beam_width=3, max_steps=1000):
     return build_result(best, is_goal(best.state), expanded_nodes, generated_nodes, start_time)
 
 
-def Local_Beam_Search(initial_state, beam_width=3, max_steps=1000):
-    return local_beam_search(initial_state, beam_width, max_steps)
-
-
-def search(initial_state, beam_width=3, max_steps=1000):
-    return local_beam_search(initial_state, beam_width, max_steps)
+def Search(initial_state, beam_width=3, max_steps=1000):
+    return Local_beam_search(initial_state, beam_width, max_steps)

@@ -52,7 +52,7 @@ def _hill_climb(start, max_steps):
     return current, expanded, generated
 
 
-def random_restart_hill_climbing(
+def Random_restart_hill_climbing(
     initial_state,
     restarts=20,
     max_steps=500,
@@ -86,24 +86,8 @@ def random_restart_hill_climbing(
     return build_result(best, False, expanded_nodes, generated_nodes, start_time)
 
 
-def Random_Restart_Hill_Climbing(
-    initial_state,
-    restarts=20,
-    max_steps=500,
-    random_walk_steps=10,
-    seed=None,
-):
-    return random_restart_hill_climbing(
-        initial_state,
-        restarts,
-        max_steps,
-        random_walk_steps,
-        seed,
-    )
-
-
-def search(initial_state, restarts=20, max_steps=500, random_walk_steps=10, seed=None):
-    return random_restart_hill_climbing(
+def Search(initial_state, restarts=20, max_steps=500, random_walk_steps=10, seed=None):
+    return Random_restart_hill_climbing(
         initial_state,
         restarts,
         max_steps,

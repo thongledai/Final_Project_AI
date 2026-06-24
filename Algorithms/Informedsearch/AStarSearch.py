@@ -3,12 +3,12 @@ import itertools
 import time
 
 from Algorithms.SearchCommon import build_result, heuristic
-from Core.Action import actions
+from Core.Action import get_actions
 from Core.Node import Node
 from Core.Utils import is_goal, state_to_tuple
 
 
-def a_star_search(initial_state, max_expanded=100000):
+def A_star_search(initial_state, max_expanded=100000):
     start_time = time.time()
     start = Node(initial_state)
     counter = itertools.count()
@@ -28,7 +28,7 @@ def a_star_search(initial_state, max_expanded=100000):
             return build_result(node, True, expanded_nodes, generated_nodes, start_time)
 
         expanded_nodes += 1
-        for action in actions(node.state):
+        for action in get_actions(node.state):
             child = node.expand(action)
             child_key = state_to_tuple(child.state)
             if child.cost >= best_cost.get(child_key, float("inf")):
@@ -43,9 +43,5 @@ def a_star_search(initial_state, max_expanded=100000):
     return build_result(best_node, False, expanded_nodes, generated_nodes, start_time)
 
 
-def AStar_Search(initial_state, max_expanded=100000):
-    return a_star_search(initial_state, max_expanded)
-
-
-def search(initial_state, max_expanded=100000):
-    return a_star_search(initial_state, max_expanded)
+def Search(initial_state, max_expanded=100000):
+    return A_star_search(initial_state, max_expanded)
