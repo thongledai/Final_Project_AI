@@ -1,8 +1,7 @@
 import time
-
-from Algorithms.SearchCommon import best_child, build_result, heuristic
 from Core.Node import Node
-from Core.Utils import is_goal, state_to_tuple
+from Core.Result import Solution
+from Core.Utils import is_goal, state_to_tuple,best_child, heuristic
 
 
 def Steepest_ascent_hill_climbing(initial_state, max_steps=1000):
@@ -14,7 +13,7 @@ def Steepest_ascent_hill_climbing(initial_state, max_steps=1000):
 
     for _ in range(max_steps):
         if is_goal(current.state):
-            return build_result(current, True, expanded_nodes, generated_nodes, start_time)
+            return Solution(current, True, expanded_nodes, generated_nodes, start_time)
 
         candidate, children = best_child(current)
         expanded_nodes += 1
@@ -32,7 +31,7 @@ def Steepest_ascent_hill_climbing(initial_state, max_steps=1000):
         seen.add(key)
         current = candidate
 
-    return build_result(current, is_goal(current.state), expanded_nodes, generated_nodes, start_time)
+    return Solution(current, is_goal(current.state), expanded_nodes, generated_nodes, start_time)
 
 
 def Search(initial_state, max_steps=1000):

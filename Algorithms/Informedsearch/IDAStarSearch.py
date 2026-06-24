@@ -1,9 +1,8 @@
 import time
-
-from Algorithms.SearchCommon import build_result, heuristic
 from Core.Action import get_actions
 from Core.Node import Node
-from Core.Utils import is_goal, state_to_tuple
+from Core.Result import Solution
+from Core.Utils import is_goal, state_to_tuple,heuristic
 
 
 FOUND = object()
@@ -58,10 +57,10 @@ def Ida_star_search(initial_state, max_depth=80):
     while bound < float("inf"):
         result, found_node = dfs(start, bound, {state_to_tuple(initial_state)})
         if result is FOUND:
-            return build_result(found_node, True, expanded_nodes, generated_nodes, start_time)
+            return Solution(found_node, True, expanded_nodes, generated_nodes, start_time)
         bound = result
 
-    return build_result(best_node, False, expanded_nodes, generated_nodes, start_time)
+    return Solution(best_node, False, expanded_nodes, generated_nodes, start_time)
 
 
 def Search(initial_state, max_depth=80):

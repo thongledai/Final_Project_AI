@@ -1,8 +1,7 @@
 import time
-
-from Algorithms.SearchCommon import build_result, child_nodes, heuristic
 from Core.Node import Node
-from Core.Utils import is_goal, state_to_tuple
+from Core.Result import Solution
+from Core.Utils import is_goal, state_to_tuple, child_nodes, heuristic
 
 
 def Local_beam_search(initial_state, beam_width=3, max_steps=1000):
@@ -19,7 +18,7 @@ def Local_beam_search(initial_state, beam_width=3, max_steps=1000):
 
         for node in beam:
             if is_goal(node.state):
-                return build_result(node, True, expanded_nodes, generated_nodes, start_time)
+                return Solution(node, True, expanded_nodes, generated_nodes, start_time)
 
             children = child_nodes(node)
             expanded_nodes += 1
@@ -41,7 +40,7 @@ def Local_beam_search(initial_state, beam_width=3, max_steps=1000):
         if heuristic(beam[0].state) < heuristic(best.state):
             best = beam[0]
 
-    return build_result(best, is_goal(best.state), expanded_nodes, generated_nodes, start_time)
+    return Solution(best, is_goal(best.state), expanded_nodes, generated_nodes, start_time)
 
 
 def Search(initial_state, beam_width=3, max_steps=1000):

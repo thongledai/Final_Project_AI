@@ -1,9 +1,8 @@
 import random
 import time
-
-from Algorithms.SearchCommon import best_child, build_result, child_nodes, heuristic
 from Core.Node import Node
-from Core.Utils import is_goal, state_to_tuple
+from Core.Result import Solution
+from Core.Utils import is_goal, state_to_tuple,best_child, child_nodes, heuristic
 
 
 def _Random_walk(start, steps, rng):
@@ -81,9 +80,9 @@ def Random_restart_hill_climbing(
             best = candidate
 
         if is_goal(candidate.state):
-            return build_result(candidate, True, expanded_nodes, generated_nodes, start_time)
+            return Solution(candidate, True, expanded_nodes, generated_nodes, start_time)
 
-    return build_result(best, False, expanded_nodes, generated_nodes, start_time)
+    return Solution(best, False, expanded_nodes, generated_nodes, start_time)
 
 
 def Search(initial_state, restarts=20, max_steps=500, random_walk_steps=10, seed=None):

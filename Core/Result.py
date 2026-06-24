@@ -14,14 +14,14 @@ class Result:
     depth: int = 0                       # Độ sâu lời giải
     runtime: float = 0                   # Thời gian chạy
 
-def Solution(success, path, states, last_state, cost, generated_states, depth, runtime):
-    return Result(
+def Solution(node, success, expanded_nodes, generated_nodes, start_time):
+     return Result(
         success=success,
-        path=path,
-        states=states,
-        last_state=last_state,
-        cost=cost,
-        generated_states=generated_states,
-        depth=depth,
-        runtime=runtime
+        path=node.get_path(),
+        states=node.get_states(),
+        last_state=node.get_state(),
+        cost=node.cost,
+        generated_states=generated_nodes,
+        depth=node.get_depth(),
+        runtime=time.time() - start_time,
     )
