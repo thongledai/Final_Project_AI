@@ -12,7 +12,7 @@ def check_action(state,i1, i2):
 
 
 # Lấy danh sách các hành động có thể thực hiện từ trạng thái hiện tại (tối đa: A(2,4)=12)
-def actions(state):
+def get_actions(state):
     result=[]
     for i1 in range(QUANTITY):
         for i2 in range(QUANTITY):
@@ -22,14 +22,19 @@ def actions(state):
     # eg: [(0, 1), (3, 2), (2, 3)]
 
 
-# Thực hiện hành động đổ nước từ lọ i1 sang lọ i2 và trả về trạng thái mới
-def apply_action(state, action):
+# Số phần tử nước có thể đổ
+def get_steps(state, action):
     i1, i2 = action
     runs=get_count_same_top(state,i1)
     slots=empty_slots(state,i2)
-    steps=min(runs,slots)
-    new_state=copy_state(state)
+    return min(runs,slots)
 
+
+# Thực hiện hành động đổ nước từ lọ i1 sang lọ i2 và trả về trạng thái mới
+def apply_action(state, action):
+    new_state=copy_state(state)
+    steps=get_steps(state, action)
+    i1, i2 = action
     for _ in range(steps):
         value = new_state[i1].pop()
         new_state[i2].append(value)
