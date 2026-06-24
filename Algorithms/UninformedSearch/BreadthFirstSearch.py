@@ -11,16 +11,7 @@ def BFS(START):
     start_time=time.time()
     node=Node(START)
     if is_goal(node.state):
-        return Solution(
-            success=True,
-            path=node.get_path(),
-            states=node.get_states(),
-            last_state=node.get_state(),
-            cost=node.get_cost(),
-            generated_states=1,
-            depth=node.get_depth(),
-            runtime=time.time()-start_time
-        )
+        return Solution(True, node.get_path(), node.get_states(), node.get_state(), node.get_cost(), 1, node.get_depth(), time.time()-start_time)
     
     frontier = deque([node])
     explored = []
@@ -31,37 +22,12 @@ def BFS(START):
 
         actions = get_actions(node.state)
         for action in actions:
-<<<<<<< HEAD
-            child = Node(state=apply_action(node.state, action), 
-                         parent=node, 
-                         action=action, 
-                         cost=node.get_cost() + 1)
-            
-=======
             child = node.expand(action)
->>>>>>> Thong
+
             if child.state not in explored and child not in frontier:
                 if is_goal(child.state):
-                    return Solution(
-                        success=True,
-                        path=child.get_path(),
-                        states=child.get_states(),
-                        last_state=child.get_state(),
-                        cost=child.get_cost(),
-                        generated_states=len(explored) + len(frontier),
-                        depth=child.get_depth(),
-                        runtime=time.time()-start_time
-                    )
+                    return Solution(True, child.get_path(), child.get_states(), child.get_state(), child.get_cost(), len(explored) + len(frontier), child.get_depth(), time.time()-start_time)
                 frontier.append(child)
 
     # failure
-    return Solution(
-        success=False,
-        path=node.get_path(),
-        states=node.get_states(),
-        last_state=node.get_state(),
-        cost=node.get_cost(),
-        generated_states=len(explored) + len(frontier),
-        depth=node.get_depth(),
-        runtime=time.time()-start_time
-    )
+    return Solution(False, node.get_path(), node.get_states(), node.get_state(), node.get_cost(), len(explored) + len(frontier), node.get_depth(), time.time()-start_time)
