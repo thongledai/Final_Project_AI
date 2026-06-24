@@ -7,7 +7,15 @@ from Core.Utils import CAPACITY, is_goal, state_to_tuple
 
 
 def heuristic(state):
-    """Lower is better. Counts disorder inside tubes and unfinished tubes."""
+    # h(n) trong bài này là điểm đánh giá trạng thái còn lộn xộn bao nhiêu
+    # Lọ rỗng -> +0
+    # Lọ đầy 4 ô và cùng màu -> +0
+    # Lọ chưa đúng -> cộng điểm phạt
+    # Điểm phạt gồm:
+    # +1 vì lọ chưa hoàn thành
+    # + số ô còn trống
+    # + số lần hai màu cạnh nhau khác nhau
+    # + số màu khác nhau trong lọ - 1
     score = 0
     for tube in state:
         if not tube:

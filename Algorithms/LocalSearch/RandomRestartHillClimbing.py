@@ -6,7 +6,7 @@ from Core.Node import Node
 from Core.Utils import is_goal, state_to_tuple
 
 
-def _random_walk(start, steps, rng):
+def _Random_walk(start, steps, rng):
     current = start
     seen = {state_to_tuple(current.state)}
     generated = 1
@@ -26,7 +26,7 @@ def _random_walk(start, steps, rng):
     return current, generated
 
 
-def _hill_climb(start, max_steps):
+def _Hill_climb(start, max_steps):
     current = start
     seen = {state_to_tuple(current.state)}
     expanded = 0
@@ -70,10 +70,10 @@ def Random_restart_hill_climbing(
         if restart == 0:
             start = root
         else:
-            start, generated = _random_walk(root, random_walk_steps, rng)
+            start, generated = _Random_walk(root, random_walk_steps, rng)
             generated_nodes += generated
 
-        candidate, expanded, generated = _hill_climb(start, max_steps)
+        candidate, expanded, generated = _Hill_climb(start, max_steps)
         expanded_nodes += expanded
         generated_nodes += generated
 
