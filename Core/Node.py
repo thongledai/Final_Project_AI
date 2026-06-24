@@ -1,12 +1,12 @@
 from Core.Action import *
-
+from Core.Cost import *
 
 class Node:
     def __init__(self, state, parent=None, action=None, cost=0):
-        self.state = state
-        self.parent = parent
-        self.action = action
-        self.cost = cost
+        self.state = state   # List
+        self.parent = parent # Node
+        self.action = action # Tuple
+        self.cost = cost     # int
 
 
     # So sánh = theo trạng thái
@@ -29,6 +29,14 @@ class Node:
         return self.cost
     
 
+<<<<<<< HEAD
+=======
+    #Trả về node cha
+    def get_parent(self):
+        return self.parent
+    
+
+>>>>>>> Thong
     # Trả về state từ gốc đến node hiện tại
     def get_states(self):
         path = []
@@ -100,12 +108,34 @@ class Node:
 
     
     # Tạo node con từ node hiện tại và action
-    def expand(self, action):
+    def expand(self, action, cost_function=None):
         next_state = apply_action(self.state, action)
-        return Node(
-            state=next_state,
-            parent=self,
-            action=action,
-            cost=self.cost + 1
-        )
+        match cost_function:
+            case None: # Chi phí di chuyển mặc định là 1
+                return Node(
+                    state=next_state,
+                    parent=self,
+                    action=action,
+                    cost=self.cost + 1
+                )
+            case "g(x)": # Chi phí di chuyển dùng hàm
+                return Node(
+                    state=next_state,
+                    parent=self,
+                    action=action,
+                    cost=self.cost + step_cost(self.state, action)
+                )
+            case "h(x)": pass
+            case "f(x)": pass
     # eg: child = node.expand(action)
+
+
+    # Kiểm tra có lặp lại trạng thái cũ không
+    def is_cycle(self):
+        ancestor=self.parent
+        while ancestor is not None:
+            if self.state == ancestor.state:
+                return True
+            ancestor=ancestor.parent
+        return False
+

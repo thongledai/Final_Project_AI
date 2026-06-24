@@ -13,10 +13,18 @@ def IDS(START):
     while True:
         result = DLS(START, depth)
         if result != "cutoff":
+<<<<<<< HEAD
             runtime = time.time() - start_time
             return result
         depth+=1
 # Deoth Limited Search
+=======
+            result.runtime = time.time() - start_time
+            return result
+        
+
+# Depth Limited Search
+>>>>>>> Thong
 def DLS(START, limit):
     node = Node(START)
     frontier = deque([node])
@@ -42,7 +50,11 @@ def DLS(START, limit):
                 states=node.get_states(),
                 last_state=node.get_state(),
                 cost=node.get_cost(),
+<<<<<<< HEAD
                 generated_states=1,
+=======
+                generated_states=len(explored) + len(frontier),
+>>>>>>> Thong
                 depth=node.get_depth(),
                 runtime=time.time()-start_time
         )
@@ -51,11 +63,17 @@ def DLS(START, limit):
         else:
             actions = get_actions(node.state)
             for action in actions:
+<<<<<<< HEAD
                 child = Node(state=apply_action(node.state, action), 
                             parent=node, 
                             action=action, 
                             cost=node.get_cost() + 1)
             if child.state not in explored and child not in frontier:
                 frontier.append(child)
+=======
+                child = node.expand(action)
+                if not child.is_cycle():
+                    frontier.append(child)
+>>>>>>> Thong
 
     return result

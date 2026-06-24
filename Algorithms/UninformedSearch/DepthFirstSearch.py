@@ -31,10 +31,14 @@ def DFS(START):
 
         actions = get_actions(node.state)
         for action in actions:
+<<<<<<< HEAD
             child = Node(state=apply_action(node.state, action), 
                          parent=node, 
                          action=action, 
                          cost=node.get_cost() + 1)
+=======
+            child = node.expand(action)
+>>>>>>> Thong
             
             if child.state not in explored and child not in frontier:
                 if is_goal(child.state):
