@@ -23,30 +23,14 @@ def DLS(START, limit):
     frontier = deque([node])
     explored = []
 
-    result = Solution(
-            success=False,
-            path=node.get_path(),
-            states=node.get_states(),
-            last_state=node.get_state(),
-            cost=node.get_cost(),
-            generated_states=len(explored) + len(frontier),
-            depth=node.get_depth(),
-        )
+    result = Solution(False, node.get_path(), node.get_states(), node.get_state(), node.get_cost(), len(explored) + len(frontier), node.get_depth(), time.time()-start_time)
     while frontier:
         node=frontier.pop()
         explored.append(node.state)
 
         if is_goal(node.state):
-            return Solution(
-                success=True,
-                path=node.get_path(),
-                states=node.get_states(),
-                last_state=node.get_state(),
-                cost=node.get_cost(),
-                generated_states=len(explored) + len(frontier),
-                depth=node.get_depth(),
-                runtime=time.time()-start_time
-        )
+            return Solution(True, node.get_path(), node.get_states(), node.get_state(), node.get_cost(), len(explored) + len(frontier), node.get_depth(), time.time()-start_time)
+        
         if node.get_depth() >=limit:
             result = "cutoff"
         else:
