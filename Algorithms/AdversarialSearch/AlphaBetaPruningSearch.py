@@ -3,8 +3,9 @@ from Core.Action import *
 from Core.Utils import *
 from Core.Result import *
 
-def MS(node, maximizing_player):
-    
+
+def ABPS(node, alpha, beta, maximizing_player):
+
     actions=get_actions(node.state)
     if is_goal(node.state):
         if maximizing_player: # tới lượt máy -> Máy thua
@@ -15,18 +16,24 @@ def MS(node, maximizing_player):
     elif len(actions)==0 or node.is_cycle(): # Hòa
         return 0
     
-    if maximizing_player: # True: Máy đi
-        max_eval = -1
+    if maximizing_player:  # True: Máy đi
+        value = -1
         for action in actions:
             child = node.expand(action)
-            eval = MS(child, False)
-            max_eval = max(max_eval, eval)
-        return max_eval
-       
+            value = max(value, ABPS(child, alpha, beta, False))
+            alpha = max(alpha, value)
+            if beta <= alpha:
+                break 
+        return value
+    
     else: # False: Người đi
-        min_eval = 1
+        value = 1
         for action in actions:
             child = node.expand(action)
-            eval = MS(child, True)
-            min_eval = min(min_eval, eval)
-        return min_eval
+            value = min(value, ABPS(child, alpha, beta, True))
+            beta = min(beta, value)
+            if beta <= alpha:
+                break
+        return value
+   
+
