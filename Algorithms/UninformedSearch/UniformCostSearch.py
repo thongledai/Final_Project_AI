@@ -1,4 +1,4 @@
-from collections import deque
+import heapq
 import time
 from Core.Node import *
 from Core.Action import *
@@ -6,28 +6,28 @@ from Core.Utils import *
 from Core.Result import *
 
 
-# Thuật toán tìm kiếm theo chiều rộng
-def BFS(START):
+# Thuật toán tìm kiếm chi phí đồng nhất
+def UCS(START):
     start_time=time.time()
     node=Node(START)
     if is_goal(node.state):
         return Solution(True, node.get_path(), node.get_states(), node.get_state(), node.get_cost(), 1, node.get_depth(), time.time()-start_time)
     
-    frontier = deque([node])
+    frontier = []
     explored = []
-    
+    heapq.heappush(frontier, node)
+
     while frontier:
-        node = frontier.popleft()
+        node = heapq.heappop(frontier)
         explored.append(node.state)
-
+        if is_goal(node.state):
+            return Solution(True, child.get_path(), child.get_states(), child.get_state(), child.get_cost(), len(explored) + len(frontier), child.get_depth(), time.time()-start_time)
+        
         actions = get_actions(node.state)
-        for action in actions:
-            child = node.expand(action)
-
+        for action1 in actions:
+            child = node.expand(action=action1,cost_function="g(x)")
             if child.state not in explored and child not in frontier:
-                if is_goal(child.state):
-                    return Solution(True, child.get_path(), child.get_states(), child.get_state(), child.get_cost(), len(explored) + len(frontier), child.get_depth(), time.time()-start_time)
-                frontier.append(child)
+                heapq.heappush(frontier, child)
 
     # failure
     return Solution(False, node.get_path(), node.get_states(), node.get_state(), node.get_cost(), len(explored) + len(frontier), node.get_depth(), time.time()-start_time)
