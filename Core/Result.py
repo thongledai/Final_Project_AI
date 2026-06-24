@@ -4,55 +4,24 @@ from Core.Action import *
 from Core.Utils import *
 
 @dataclass
-class Solution:
+class Result:
     success: bool                        # Tìm thấy lời giải không
     path: List[tuple] = None             # Danh sách hành động từ start đến end
     states: List[list] = None            # Danh sách trạng thái
-    last_state: list = None             # Trạng thái cuối cùng
+    last_state: list = None              # Trạng thái cuối cùng
     cost: float = 0                      # Tổng cost
     generated_states: int = 0            # Số node sinh ra
     depth: int = 0                       # Độ sâu lời giải
     runtime: float = 0                   # Thời gian chạy
 
-
-# eg: BFS (đủ thông tin)
-# return Solution(
-#     success=is_goal(node.current),
-#     path=node.get_path(),
-#     states=node.get_states(),
-#     last_state=node.current,
-#     cost=node.cost,
-#     generated_states=generated,
-#     depth=node.get_depth(),
-#     runtime=end-start
-# )
-
-# eg: Hill Climbing (không đủ thông tin)
-# return Solution(
-#     success=is_goal(current),
-#     last_state=current,
-#     cost=steps,
-#     runtime=end-start
-# )
-
-
-# eg: BFS (đủ thông tin)
-# return Solution(
-#     success=is_goal(node.current),
-#     path=node.get_path(),
-#     states=node.get_states(),
-#     last_state=node.current,
-#     cost=node.cost,
-#     expanded_nodes=expanded,
-#     generated_states=generated,
-#     depth=node.get_depth(),
-#     runtime=end-start
-# )
-
-# eg: Hill Climbing (không đủ thông tin)
-# return Solution(
-#     success=is_goal(current),
-#     last_state=current,
-#     cost=steps,
-#     runtime=end-start
-# )
+def Solution(success, path, states, last_state, cost, generated_states, depth, runtime):
+    return Result(
+        success=success,
+        path=path,
+        states=states,
+        last_state=last_state,
+        cost=cost,
+        generated_states=generated_states,
+        depth=depth,
+        runtime=runtime
+    )
