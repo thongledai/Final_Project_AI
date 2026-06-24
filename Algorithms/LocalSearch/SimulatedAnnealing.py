@@ -7,7 +7,7 @@ from Core.Node import Node
 from Core.Utils import is_goal
 
 
-def simulated_annealing(
+def Simulated_annealing(
     initial_state,
     max_steps=5000,
     start_temperature=10.0,
@@ -46,30 +46,14 @@ def simulated_annealing(
     return build_result(best, is_goal(best.state), expanded_nodes, generated_nodes, start_time)
 
 
-def Simulated_Annealing(
+def Search(
     initial_state,
     max_steps=5000,
     start_temperature=10.0,
     cooling_rate=0.995,
     seed=None,
 ):
-    return simulated_annealing(
-        initial_state,
-        max_steps,
-        start_temperature,
-        cooling_rate,
-        seed,
-    )
-
-
-def search(
-    initial_state,
-    max_steps=5000,
-    start_temperature=10.0,
-    cooling_rate=0.995,
-    seed=None,
-):
-    return simulated_annealing(
+    return Simulated_annealing(
         initial_state,
         max_steps,
         start_temperature,

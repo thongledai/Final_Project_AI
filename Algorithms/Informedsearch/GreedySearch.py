@@ -3,12 +3,12 @@ import itertools
 import time
 
 from Algorithms.SearchCommon import build_result, heuristic
-from Core.Action import actions
+from Core.Action import get_actions
 from Core.Node import Node
 from Core.Utils import is_goal, state_to_tuple
 
 
-def greedy_search(initial_state, max_expanded=100000):
+def Greedy_search(initial_state, max_expanded=100000):
     start_time = time.time()
     start = Node(initial_state)
     counter = itertools.count()
@@ -33,7 +33,7 @@ def greedy_search(initial_state, max_expanded=100000):
 
         expanded_nodes += 1
         
-        for action in actions(node.state):
+        for action in get_actions(node.state):
             child = node.expand(action)
             if state_to_tuple(child.state) in visited:
                 continue
@@ -43,9 +43,5 @@ def greedy_search(initial_state, max_expanded=100000):
     return build_result(best_node, False, expanded_nodes, generated_nodes, start_time)
 
 
-def GreedySearch(initial_state, max_expanded=100000):
-    return greedy_search(initial_state, max_expanded)
-
-
-def search(initial_state, max_expanded=100000):
-    return greedy_search(initial_state, max_expanded)
+def Search(initial_state, max_expanded=100000):
+    return Greedy_search(initial_state, max_expanded)

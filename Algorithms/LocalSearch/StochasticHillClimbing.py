@@ -6,7 +6,7 @@ from Core.Node import Node
 from Core.Utils import is_goal, state_to_tuple
 
 
-def stochastic_hill_climbing(initial_state, max_steps=1000, seed=None):
+def Stochastic_hill_climbing(initial_state, max_steps=1000, seed=None):
     rng = random.Random(seed)
     start_time = time.time()
     current = Node(initial_state)
@@ -38,9 +38,5 @@ def stochastic_hill_climbing(initial_state, max_steps=1000, seed=None):
     return build_result(current, is_goal(current.state), expanded_nodes, generated_nodes, start_time)
 
 
-def Stochastic_Hill_Climbing(initial_state, max_steps=1000, seed=None):
-    return stochastic_hill_climbing(initial_state, max_steps, seed)
-
-
-def search(initial_state, max_steps=1000, seed=None):
-    return stochastic_hill_climbing(initial_state, max_steps, seed)
+def Search(initial_state, max_steps=1000, seed=None):
+    return Stochastic_hill_climbing(initial_state, max_steps, seed)

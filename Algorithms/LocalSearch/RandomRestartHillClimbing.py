@@ -6,7 +6,7 @@ from Core.Node import Node
 from Core.Utils import is_goal, state_to_tuple
 
 
-def _random_walk(start, steps, rng):
+def _Random_walk(start, steps, rng):
     current = start
     seen = {state_to_tuple(current.state)}
     generated = 1
@@ -26,7 +26,7 @@ def _random_walk(start, steps, rng):
     return current, generated
 
 
-def _hill_climb(start, max_steps):
+def _Hill_climb(start, max_steps):
     current = start
     seen = {state_to_tuple(current.state)}
     expanded = 0
@@ -52,7 +52,7 @@ def _hill_climb(start, max_steps):
     return current, expanded, generated
 
 
-def random_restart_hill_climbing(
+def Random_restart_hill_climbing(
     initial_state,
     restarts=20,
     max_steps=500,
@@ -70,10 +70,10 @@ def random_restart_hill_climbing(
         if restart == 0:
             start = root
         else:
-            start, generated = _random_walk(root, random_walk_steps, rng)
+            start, generated = _Random_walk(root, random_walk_steps, rng)
             generated_nodes += generated
 
-        candidate, expanded, generated = _hill_climb(start, max_steps)
+        candidate, expanded, generated = _Hill_climb(start, max_steps)
         expanded_nodes += expanded
         generated_nodes += generated
 
@@ -86,24 +86,8 @@ def random_restart_hill_climbing(
     return build_result(best, False, expanded_nodes, generated_nodes, start_time)
 
 
-def Random_Restart_Hill_Climbing(
-    initial_state,
-    restarts=20,
-    max_steps=500,
-    random_walk_steps=10,
-    seed=None,
-):
-    return random_restart_hill_climbing(
-        initial_state,
-        restarts,
-        max_steps,
-        random_walk_steps,
-        seed,
-    )
-
-
-def search(initial_state, restarts=20, max_steps=500, random_walk_steps=10, seed=None):
-    return random_restart_hill_climbing(
+def Search(initial_state, restarts=20, max_steps=500, random_walk_steps=10, seed=None):
+    return Random_restart_hill_climbing(
         initial_state,
         restarts,
         max_steps,

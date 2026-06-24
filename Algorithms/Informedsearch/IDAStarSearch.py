@@ -1,7 +1,7 @@
 import time
 
 from Algorithms.SearchCommon import build_result, heuristic
-from Core.Action import actions
+from Core.Action import get_actions
 from Core.Node import Node
 from Core.Utils import is_goal, state_to_tuple
 
@@ -9,7 +9,7 @@ from Core.Utils import is_goal, state_to_tuple
 FOUND = object()
 
 
-def ida_star_search(initial_state, max_depth=80):
+def Ida_star_search(initial_state, max_depth=80):
     start_time = time.time()
     start = Node(initial_state)
     bound = heuristic(initial_state)
@@ -36,14 +36,11 @@ def ida_star_search(initial_state, max_depth=80):
         expanded_nodes += 1
         next_limit = float("inf")
 
-        ordered_actions = sorted(
-            actions(node.state),
-            key=lambda action: heuristic(node.expand(action).state),
-        )
+        children = [node.expand(action) for action in get_actions(node.state)]
+        generated_nodes += len(children)
+        children.sort(key=lambda child: heuristic(child.state))
 
-        for action in ordered_actions:
-            child = node.expand(action)
-            generated_nodes += 1
+        for child in children:
             key = state_to_tuple(child.state)
             if key in path_keys:
                 continue
@@ -67,9 +64,5 @@ def ida_star_search(initial_state, max_depth=80):
     return build_result(best_node, False, expanded_nodes, generated_nodes, start_time)
 
 
-def IDAStar_Search(initial_state, max_depth=80):
-    return ida_star_search(initial_state, max_depth)
-
-
-def search(initial_state, max_depth=80):
-    return ida_star_search(initial_state, max_depth)
+def Search(initial_state, max_depth=80):
+    return Ida_star_search(initial_state, max_depth)
