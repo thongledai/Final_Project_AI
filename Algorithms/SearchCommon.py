@@ -33,17 +33,6 @@ def heuristic(state):
 
 
 def build_result(node, success, expanded_nodes, generated_nodes, start_time):
-    if node is None:
-        return Solution(
-            success=False,
-            path=[],
-            states=[],
-            last_state=None,
-            cost=0,
-            generated_states=generated_nodes,
-            depth=0,
-            runtime=time.time() - start_time,
-        )
 
     return Solution(
         success=success,
