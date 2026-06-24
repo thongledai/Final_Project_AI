@@ -23,13 +23,13 @@ def DLS(START, limit):
     frontier = deque([node])
     explored = []
 
-    result = Solution(False, node.get_path(), node.get_states(), node.get_state(), node.get_cost(), len(explored) + len(frontier), node.get_depth(), time.time()-start_time)
+    result = Solution(node, len(explored), len(explored) + len(frontier), start_time)
     while frontier:
         node=frontier.pop()
         explored.append(node.state)
 
         if is_goal(node.state):
-            return Solution(True, node.get_path(), node.get_states(), node.get_state(), node.get_cost(), len(explored) + len(frontier), node.get_depth(), time.time()-start_time)
+            return Solution(node, len(explored), len(explored) + len(frontier), start_time)
         
         if node.get_depth() >=limit:
             result = "cutoff"
@@ -37,6 +37,7 @@ def DLS(START, limit):
             actions = get_actions(node.state)
             for action in actions:
                 child = node.expand(action)
+                
                 if not child.is_cycle():
                     frontier.append(child)
 

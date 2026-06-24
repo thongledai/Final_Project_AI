@@ -6,7 +6,7 @@ from Core.Result import Solution
 from Core.Utils import is_goal,child_nodes, heuristic
 
 
-def Simulated_annealing(
+def SAS(
     initial_state,
     max_steps=5000,
     start_temperature=10.0,
@@ -23,7 +23,7 @@ def Simulated_annealing(
 
     for _ in range(max_steps):
         if is_goal(current.state):
-            return Solution(current, True, expanded_nodes, generated_nodes, start_time)
+            return Solution(current, expanded_nodes, generated_nodes, start_time)
 
         children = child_nodes(current)
         expanded_nodes += 1
@@ -42,7 +42,7 @@ def Simulated_annealing(
 
         temperature *= cooling_rate
 
-    return Solution(best, is_goal(best.state), expanded_nodes, generated_nodes, start_time)
+    return Solution(best, expanded_nodes, generated_nodes, start_time)
 
 
 def Search(
@@ -52,7 +52,7 @@ def Search(
     cooling_rate=0.995,
     seed=None,
 ):
-    return Simulated_annealing(
+    return SAS(
         initial_state,
         max_steps,
         start_temperature,

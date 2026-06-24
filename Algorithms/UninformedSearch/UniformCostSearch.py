@@ -11,7 +11,7 @@ def UCS(START):
     start_time=time.time()
     node=Node(START)
     if is_goal(node.state):
-        return Solution(True, node.get_path(), node.get_states(), node.get_state(), node.get_cost(), 1, node.get_depth(), time.time()-start_time)
+        return Solution(node,1,1,start_time)
     
     frontier = []
     explored = []
@@ -21,7 +21,7 @@ def UCS(START):
         node = heapq.heappop(frontier)
         explored.append(node.state)
         if is_goal(node.state):
-            return Solution(True, child.get_path(), child.get_states(), child.get_state(), child.get_cost(), len(explored) + len(frontier), child.get_depth(), time.time()-start_time)
+            return Solution(node,len(explored), len(explored) + len(frontier), start_time)
         
         actions = get_actions(node.state)
         for action1 in actions:
@@ -30,4 +30,4 @@ def UCS(START):
                 heapq.heappush(frontier, child)
 
     # failure
-    return Solution(False, node.get_path(), node.get_states(), node.get_state(), node.get_cost(), len(explored) + len(frontier), node.get_depth(), time.time()-start_time)
+    return Solution(node, len(explored), len(explored) + len(frontier), start_time)

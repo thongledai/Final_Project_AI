@@ -51,7 +51,7 @@ def _Hill_climb(start, max_steps):
     return current, expanded, generated
 
 
-def Random_restart_hill_climbing(
+def RRHCS(
     initial_state,
     restarts=20,
     max_steps=500,
@@ -63,7 +63,7 @@ def Random_restart_hill_climbing(
     root = Node(initial_state)
     best = root
     expanded_nodes = 0
-    generated_nodes = 1
+    generated_nodes = 0
 
     for restart in range(restarts + 1):
         if restart == 0:
@@ -80,13 +80,13 @@ def Random_restart_hill_climbing(
             best = candidate
 
         if is_goal(candidate.state):
-            return Solution(candidate, True, expanded_nodes, generated_nodes, start_time)
+            return Solution(candidate, expanded_nodes, generated_nodes, start_time)
 
-    return Solution(best, False, expanded_nodes, generated_nodes, start_time)
+    return Solution(best, expanded_nodes, generated_nodes, start_time)
 
 
 def Search(initial_state, restarts=20, max_steps=500, random_walk_steps=10, seed=None):
-    return Random_restart_hill_climbing(
+    return RRHCS(
         initial_state,
         restarts,
         max_steps,

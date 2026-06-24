@@ -10,18 +10,20 @@ class Result:
     states: List[list] = None            # Danh sách trạng thái
     last_state: list = None              # Trạng thái cuối cùng
     cost: float = 0                      # Tổng cost
-    generated_states: int = 0            # Số node sinh ra
+    explored: int = 0                    # Số node đã xét
+    generated: int = 0                   # Số node đã sinh ra
     depth: int = 0                       # Độ sâu lời giải
     runtime: float = 0                   # Thời gian chạy
 
-def Solution(node, success, expanded_nodes, generated_nodes, start_time):
+def Solution(node, explored, generated, start_time):
      return Result(
-        success=success,
+        success=is_goal(node.get_state()),
         path=node.get_path(),
         states=node.get_states(),
         last_state=node.get_state(),
         cost=node.cost,
-        generated_states=generated_nodes,
+        explored=explored,
+        generated=generated,
         depth=node.get_depth(),
         runtime=time.time() - start_time,
     )

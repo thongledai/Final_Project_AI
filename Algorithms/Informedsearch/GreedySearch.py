@@ -7,7 +7,7 @@ from Core.Result import Solution
 from Core.Utils import is_goal, state_to_tuple,heuristic
 
 
-def Greedy_search(initial_state, max_expanded=100000):
+def GS(initial_state, max_expanded=100000):
     start_time = time.time()
     start = Node(initial_state)
     counter = itertools.count()
@@ -28,7 +28,7 @@ def Greedy_search(initial_state, max_expanded=100000):
             best_node = node
 
         if is_goal(node.state):
-            return Solution(node, True, expanded_nodes, generated_nodes, start_time)
+            return Solution(node, expanded_nodes, generated_nodes, start_time)
 
         expanded_nodes += 1
         
@@ -39,8 +39,8 @@ def Greedy_search(initial_state, max_expanded=100000):
             heapq.heappush(frontier, (heuristic(child.state), next(counter), child))
             generated_nodes += 1
 
-    return Solution(best_node, False, expanded_nodes, generated_nodes, start_time)
+    return Solution(best_node, expanded_nodes, generated_nodes, start_time)
 
 
 def Search(initial_state, max_expanded=100000):
-    return Greedy_search(initial_state, max_expanded)
+    return GS(initial_state, max_expanded)

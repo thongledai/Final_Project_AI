@@ -7,7 +7,7 @@ from Core.Result import Solution
 from Core.Utils import is_goal, state_to_tuple, heuristic
 
 
-def A_star_search(initial_state, max_expanded=100000):
+def ASS(initial_state, max_expanded=100000):
     start_time = time.time()
     start = Node(initial_state)
     counter = itertools.count()
@@ -43,7 +43,7 @@ def A_star_search(initial_state, max_expanded=100000):
             continue
 
         if is_goal(node.state):
-            return Solution(node, True, expanded_nodes, generated_nodes, start_time)
+            return Solution(node, expanded_nodes, generated_nodes, start_time)
 
         # Loại n khỏi FRONTIER và thêm n vào REACHED.
         reached.add(node_key)
@@ -74,8 +74,8 @@ def A_star_search(initial_state, max_expanded=100000):
             generated_nodes += 1
 
     best_node = min((item[3] for item in frontier), key=lambda n: heuristic(n.state), default=start)
-    return Solution(best_node, False, expanded_nodes, generated_nodes, start_time)
+    return Solution(best_node, expanded_nodes, generated_nodes, start_time)
 
 
 def Search(initial_state, max_expanded=100000):
-    return A_star_search(initial_state, max_expanded)
+    return ASS(initial_state, max_expanded)

@@ -8,7 +8,7 @@ from Core.Utils import is_goal, state_to_tuple,heuristic
 FOUND = object()
 
 
-def Ida_star_search(initial_state, max_depth=80):
+def IDASS(initial_state, max_depth=80):
     start_time = time.time()
     start = Node(initial_state)
     bound = heuristic(initial_state)
@@ -57,11 +57,11 @@ def Ida_star_search(initial_state, max_depth=80):
     while bound < float("inf"):
         result, found_node = dfs(start, bound, {state_to_tuple(initial_state)})
         if result is FOUND:
-            return Solution(found_node, True, expanded_nodes, generated_nodes, start_time)
+            return Solution(found_node, expanded_nodes, generated_nodes, start_time)
         bound = result
 
-    return Solution(best_node, False, expanded_nodes, generated_nodes, start_time)
+    return Solution(best_node, expanded_nodes, generated_nodes, start_time)
 
 
 def Search(initial_state, max_depth=80):
-    return Ida_star_search(initial_state, max_depth)
+    return IDASS(initial_state, max_depth)

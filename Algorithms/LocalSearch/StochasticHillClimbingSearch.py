@@ -5,7 +5,7 @@ from Core.Node import Node
 from Core.Utils import is_goal, state_to_tuple,child_nodes, heuristic
 
 
-def Stochastic_hill_climbing(initial_state, max_steps=1000, seed=None):
+def SHCS(initial_state, max_steps=1000, seed=None):
     rng = random.Random(seed)
     start_time = time.time()
     current = Node(initial_state)
@@ -15,7 +15,7 @@ def Stochastic_hill_climbing(initial_state, max_steps=1000, seed=None):
 
     for _ in range(max_steps):
         if is_goal(current.state):
-            return Solution(current, True, expanded_nodes, generated_nodes, start_time)
+            return Solution(current, expanded_nodes, generated_nodes, start_time)
 
         children = child_nodes(current)
         expanded_nodes += 1
@@ -34,8 +34,8 @@ def Stochastic_hill_climbing(initial_state, max_steps=1000, seed=None):
         current = rng.choices(improving, weights=weights, k=1)[0]
         seen.add(state_to_tuple(current.state))
 
-    return Solution(current, is_goal(current.state), expanded_nodes, generated_nodes, start_time)
+    return Solution(current, expanded_nodes, generated_nodes, start_time)
 
 
 def Search(initial_state, max_steps=1000, seed=None):
-    return Stochastic_hill_climbing(initial_state, max_steps, seed)
+    return SHCS(initial_state, max_steps, seed)
