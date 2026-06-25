@@ -14,8 +14,8 @@ def Check_Action(state,i1, i2):
 # Lấy danh sách các hành động có thể thực hiện từ trạng thái hiện tại (tối đa: A(2,4)=12)
 def Get_Actions(state):
     result=[]
-    for i1 in range(QUANTITY):
-        for i2 in range(QUANTITY):
+    for i1 in range(len(state)):
+        for i2 in range(len(state)):
             if Check_Action(state,i1, i2):
                 result.append((i1, i2))
     return result

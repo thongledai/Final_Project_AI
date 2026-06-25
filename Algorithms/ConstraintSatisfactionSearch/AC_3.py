@@ -1,4 +1,4 @@
-from Core.Utils import is_goal
+from Core.Utils import *
 def ac3_consistency_check(state):
     """Kiểm tra xem trạng thái có rõ ràng là deadlock không"""
     if is_goal(state):
