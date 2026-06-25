@@ -1,23 +1,24 @@
 from Core.Utils import START
-from Algorithms.UninformedSearch.BreadthFirstSearch import BFS 
-from Algorithms.UninformedSearch.DepthFirstSearch import DFS 
-from Algorithms.UninformedSearch.IterativeDeepeningSearch import IDS
-from Algorithms.UninformedSearch.UniformCostSearch import UCS
-from Algorithms.AdversarialSearch.Game import Game
+from algorithms.uninformed_search.Breadth_First_Search import Bfs
+from algorithms.uninformed_search.Depth_First_Search import Dfs
+from algorithms.uninformed_search.Iterative_Deepening_Search import Ids
+from algorithms.uninformed_search.Uniform_Cost_Search import Ucs
+from algorithms.adversarial_search.Game import Game
+
+
 # if __name__ == "__main__":
-#     # Chạy thuật toán DFS
-#     result = DFS(START)
-    
-#     # In kết quả chứa trong đối tượng Solution ra terminal
-#     print("\n=== KẾT QUẢ TÌM KIẾM DFS ===")
+#     result = Dfs(START)
+#
+#     print("\n=== KET QUA TIM KIEM DFS ===")
 #     print(f"- Success          : {result.success}")
 #     print(f"- Path             : {result.path}")
 #     print(f"- States           : {result.states}")
 #     print(f"- Last state       : {result.last_state}")
 #     print(f"- Cost             : {result.cost}")
-#     print(f"- Generated states : {result.generated_states}")
+#     print(f"- Generated states : {result.generated}")
 #     print(f"- Depth            : {result.depth}")
 #     print(f"- Runtime          : {result.runtime:.6f}s")
 
 
-Game(START, False) # True: Người đi trước; False: Máy đi trước
+if __name__ == "__main__":
+    Game(START, False)
