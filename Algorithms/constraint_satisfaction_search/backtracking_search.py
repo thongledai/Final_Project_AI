@@ -3,7 +3,7 @@ import time
 from Core.Node import *
 from Core.Result import *
 
-def Backtracking_search(start):
+def backtracking_search(start):
     start_time = time.time()
 
     node = Node(start)
@@ -17,7 +17,7 @@ def Backtracking_search(start):
 
     node_final = search(node, explored, stats)
 
-    return Solution(
+    return solution(
         stats["max_cost_node"] if node_final is None else node_final,
         stats["explored_node"],
         stats["generated_node"],

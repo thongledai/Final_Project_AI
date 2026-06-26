@@ -10,8 +10,8 @@ from Core.Result import *
 def UCS(START):
     start_time=time.time()
     node=Node(START)
-    if Is_Goal(node.state):
-        return Solution(node,1,1,start_time)
+    if is_goal(node.state):
+        return solution(node,1,1,start_time)
     
     frontier = []
     explored = []
@@ -20,14 +20,14 @@ def UCS(START):
     while frontier:
         node = heapq.heappop(frontier)
         explored.append(node.state)
-        if Is_Goal(node.state):
-            return Solution(node,len(explored), len(explored) + len(frontier), start_time)
+        if is_goal(node.state):
+            return solution(node,len(explored), len(explored) + len(frontier), start_time)
         
-        actions = Get_Actions(node.state)
+        actions = get_actions(node.state)
         for action1 in actions:
             child = node.Expand(action=action1,cost_function="g(x)")
             if child.state not in explored and child not in frontier:
                 heapq.heappush(frontier, child)
 
     # failure
-    return Solution(node, len(explored), len(explored) + len(frontier), start_time)
+    return solution(node, len(explored), len(explored) + len(frontier), start_time)

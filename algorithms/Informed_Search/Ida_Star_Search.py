@@ -1,27 +1,27 @@
 import time
-from Core.Action import Get_Actions
+from Core.Action import get_actions
 from Core.Node import Node
-from Core.Result import Solution
-from Core.Utils import Is_Goal,  Heuristic
+from Core.Result import solution
+from Core.Utils import is_goal,  heuristic
 
 FOUND = object()
 
-def Ida_Star_Search(initial_state, max_depth=80):
+def ida_star_search(initial_state, max_depth=80):
     start_time = time.time()
     start = Node(initial_state)
-    bound = Heuristic(initial_state)
+    bound = heuristic(initial_state)
     expanded_nodes = 0
     generated_nodes = 1
 
     def Dfs(node, limit):
         nonlocal expanded_nodes, generated_nodes
 
-        f = node.cost + Heuristic(node.state)
+        f = node.cost + heuristic(node.state)
 
         if f > limit:
             return f, None
 
-        if Is_Goal(node.state):
+        if is_goal(node.state):
             return FOUND, node
 
         if node.Get_Depth() >= max_depth:
@@ -30,7 +30,7 @@ def Ida_Star_Search(initial_state, max_depth=80):
         expanded_nodes += 1
         next_limit = float("inf")
 
-        for action in Get_Actions(node.state):
+        for action in get_actions(node.state):
             child = node.Expand(action)
             generated_nodes += 1
             result, found_node = Dfs(child, limit)
@@ -45,7 +45,7 @@ def Ida_Star_Search(initial_state, max_depth=80):
     while bound < float("inf"):
         result, found_node = Dfs(start, bound)
         if result is FOUND:
-            return Solution(found_node, expanded_nodes, generated_nodes, start_time)
+            return solution(found_node, expanded_nodes, generated_nodes, start_time)
         bound = result
 
-    return Solution(start, expanded_nodes, generated_nodes, start_time)
+    return solution(start, expanded_nodes, generated_nodes, start_time)

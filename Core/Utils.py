@@ -24,45 +24,45 @@ START_RANDOM = [
 ]
 
 # Sao chép trạng thái
-def Copy_State(state):
+def copy_state(state):
     return [row[:] for row in state]
 
 
 # Chuyển trạng thái từ list sang tuple
-def State_To_Tuple(state):
+def state_to_tuple(state):
     return tuple(tuple(row) for row in state)
 
 
 # Lấy vị trí của phần tử trên cùng của lọ i
-def Get_Top_Index(state, i):
+def get_top_index(state, i):
     return len(state[i]) - 1
 
 
 # Lấy màu của phần tử trên cùng của lọ i
-def Get_Top_Value(state,i):
-    if Is_Empty(state, i):
+def get_top_value(state,i):
+    if is_empty(state, i):
         return None
     return state[i][-1]
 
 
 # Kiểm tra xem lọ i có rỗng không
-def Is_Empty(state, i):
+def is_empty(state, i):
     return len(state[i])==0
 
 
 # Kiểm tra xem lọ i có đầy không
-def Is_Full(state,i):
+def is_full(state,i):
     return len(state[i])==CAPACITY
 
 
 # Đếm số lượng phần tử rỗng trong lọ i
-def Empty_Slots(state,i):
+def empty_slots(state,i):
     return CAPACITY-len(state[i])
 
 
 # Đếm số phần tử cùng màu liên tiếp ở top của lọ i
-def Get_Count_Same_Top(state,i):
-    j=Get_Top_Index(state,i)
+def get_count_same_top(state,i):
+    j=get_top_index(state,i)
     if j==-1:
         return 0
     else:
@@ -75,14 +75,15 @@ def Get_Count_Same_Top(state,i):
 
 
 # Kiểm tra xem trạng thái hiện tại có phải là trạng thái mục tiêu không
-def Is_Goal(state):
+def is_goal(state):
     for i in state:
         if len(i) == 0:
             continue
         if len(i) != CAPACITY or len(set(i)) != 1:
             return False
     return True
-def Heuristic(state):
+
+def heuristic(state):
     # h(n) trong bài này là điểm đánh giá trạng thái còn lộn xộn bao nhiêu
     # Lọ rỗng -> +0
     # Lọ đầy 4 ô và cùng màu -> +0
@@ -107,21 +108,21 @@ def Heuristic(state):
 
     return score
 
-def Child_Nodes(node):
-    from Core.Action import Get_Actions
+def child_nodes(node):
+    from Core.Action import get_actions
 
-    return [node.Expand(action) for action in Get_Actions(node.state)]
+    return [node.Expand(action) for action in get_actions(node.state)]
 
 
-def Best_Child(node):
-    children = Child_Nodes(node)
+def best_child(node):
+    children = child_nodes(node)
     if not children:
         return None, []
-    return min(children, key=lambda child: (Heuristic(child.state), child.cost)), children
+    return min(children, key=lambda child: (heuristic(child.state), child.cost)), children
 
 
-def Has_Seen(node, seen):
-    key = State_To_Tuple(node.state)
+def has_seen(node, seen):
+    key = state_to_tuple(node.state)
     if key in seen:
         return True
     seen.add(key)

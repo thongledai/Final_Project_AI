@@ -7,20 +7,20 @@ from Core.Result import *
 # Tăng giới hạn đệ quy vì AND-OR Search hoạt động theo chiều sâu (DFS-based)
 def and_or_graph_search(start):
     def or_search(node, path):
-        if Is_Goal(node.state):
+        if is_goal(node.state):
             return node
         
         # Kiểm tra chu trình (Cycle Checking): Tránh việc đổ nước qua lại giữa 2 ống vô tận
-        if State_To_Tuple(node.state) in path:
+        if state_to_tuple(node.state) in path:
             return None
         
         if stats['max_depth_node'].cost < node.cost:
             stats['max_depth_node'] = node
         
         stats['explored_node'] += 1
-        path.add(State_To_Tuple(node.state)) # Đánh dấu state hiện tại vào đường đi
+        path.add(state_to_tuple(node.state)) # Đánh dấu state hiện tại vào đường đi
         
-        actions = Get_Actions(node.state)
+        actions = get_actions(node.state)
         for action in actions:
             child = node.Expand(action)
             stats['generated_node'] += 1
@@ -37,10 +37,10 @@ def and_or_graph_search(start):
             if goal_node is not None:
                 # Trả lại trạng thái set như cũ (backtracking) dù không bắt buộc trong Python nếu ta pass by value,
                 # nhưng dùng set() reference thì cần remove để các nhánh khác không bị ảnh hưởng.
-                path.remove(State_To_Tuple(node.state))
+                path.remove(state_to_tuple(node.state))
                 return goal_node 
                 
-        path.remove(State_To_Tuple(node.state))
+        path.remove(state_to_tuple(node.state))
         return None # Thất bại trên nhánh này
 
     # --- HÀM AND-SEARCH ---
@@ -74,7 +74,7 @@ def and_or_graph_search(start):
     
     if goal_node is not None:
         # Thành công
-        return Solution(goal_node, stats['explored_node'], stats['generated_node'], start_time)
+        return solution(goal_node, stats['explored_node'], stats['generated_node'], start_time)
     else:
         # Thất bại
-        return Solution(stats['max_depth_node'], stats['explored_node'], stats['generated_node'], start_time)
+        return solution(stats['max_depth_node'], stats['explored_node'], stats['generated_node'], start_time)

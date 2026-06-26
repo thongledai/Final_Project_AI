@@ -4,9 +4,9 @@ from Core.Utils import *
 from Core.Result import *
 
 
-def Expectimax_Search(node, maximizing_player):
-    actions = Get_Actions(node.state)
-    if Is_Goal(node.state):
+def expectimax_search(node, maximizing_player):
+    actions = get_actions(node.state)
+    if is_goal(node.state):
         if maximizing_player:  # toi luot may -> May thua
             return -1
         else:  # toi luot nguoi -> May thang
@@ -19,7 +19,7 @@ def Expectimax_Search(node, maximizing_player):
         max_eval = -1
         for action in actions:
             child = node.Expand(action)
-            eval = Expectimax_Search(child, False)
+            eval = expectimax_search(child, False)
             max_eval = max(max_eval, eval)
         return max_eval
 
@@ -27,6 +27,6 @@ def Expectimax_Search(node, maximizing_player):
         chance_eval = 0
         for action in actions:
             child = node.Expand(action)
-            eval = Expectimax_Search(child, True)
+            eval = expectimax_search(child, True)
             chance_eval += eval
         return chance_eval / len(actions)

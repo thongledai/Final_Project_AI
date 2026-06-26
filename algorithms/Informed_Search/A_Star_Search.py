@@ -1,15 +1,15 @@
 import heapq
 import time
-from Core.Action import Get_Actions, Apply_Action
-from Core.Cost import Step_Cost
+from Core.Action import get_actions, apply_action
+from Core.Cost import step_cost
 from Core.Node import Node
-from Core.Result import Solution
-from Core.Utils import Is_Goal, State_To_Tuple, Heuristic
+from Core.Result import solution
+from Core.Utils import is_goal, state_to_tuple, heuristic
 
 
-def A_Star_Search(initial_state, max_expanded=100000):
+def a_star_search(initial_state, max_expanded=100000):
     start_time = time.time()
-    start = Node(initial_state, cost=Heuristic(initial_state))
+    start = Node(initial_state, cost=heuristic(initial_state))
 
     # FRONTIER chỉ chứa Node.
     # Với A*, Node.cost là f(n) = g(n) + h(n).
@@ -18,7 +18,7 @@ def A_Star_Search(initial_state, max_expanded=100000):
 
     # best_g lưu g(n) tốt nhất đã biết của mỗi trạng thái.
     # Key phải dùng tuple vì list không thể làm key trong dict.
-    best_g = {State_To_Tuple(initial_state): 0}
+    best_g = {state_to_tuple(initial_state): 0}
 
     # REACHED chứa các trạng thái đã được lấy khỏi FRONTIER và mở rộng.
     reached = set()
@@ -30,32 +30,32 @@ def A_Star_Search(initial_state, max_expanded=100000):
     while frontier and expanded_nodes < max_expanded:
         # Lấy node có f(n) nhỏ nhất ra khỏi FRONTIER.
         node = heapq.heappop(frontier)
-        node_key = State_To_Tuple(node.state)
+        node_key = state_to_tuple(node.state)
         g_node = best_g.get(node_key)
 
         # Nếu node này không còn mang cost tốt nhất thì bỏ qua.
         # Trường hợp này xảy ra khi cùng một trạng thái đã được tìm thấy lại
         # bằng đường đi rẻ hơn và bản cũ vẫn còn nằm trong heap.
-        if  node.cost != g_node + Heuristic(node.state):
+        if  node.cost != g_node + heuristic(node.state):
             continue
 
         # Nếu trạng thái này đã mở rộng rồi và không có cost tốt hơn thì bỏ qua.
         if node_key in reached:
             continue
 
-        if Is_Goal(node.state):
-            return Solution(node, expanded_nodes, generated_nodes, start_time)
+        if is_goal(node.state):
+            return solution(node, expanded_nodes, generated_nodes, start_time)
 
         # Loại n khỏi FRONTIER và thêm n vào REACHED.
         reached.add(node_key)
         expanded_nodes += 1
 
-        for action in Get_Actions(node.state):
-            child_state = Apply_Action(node.state, action)
-            child_key = State_To_Tuple(child_state)
+        for action in get_actions(node.state):
+            child_state = apply_action(node.state, action)
+            child_key = state_to_tuple(child_state)
 
             # g_child = g(n) + cost(action).
-            g_child = g_node + Step_Cost(node.state, action)
+            g_child = g_node + step_cost(node.state, action)
             old_g = best_g.get(child_key, float("inf"))
 
             # Nếu đã có đường đi tới m tốt hơn hoặc bằng thì bỏ qua m.
@@ -68,7 +68,7 @@ def A_Star_Search(initial_state, max_expanded=100000):
                 reached.remove(child_key)
 
             # Tạo Node con với cost là f(child), vì heapq so sánh theo Node.cost.
-            f_child = g_child + Heuristic(child_state)
+            f_child = g_child + heuristic(child_state)
             best_g[child_key] = g_child
             child = Node(
                 state=child_state,
@@ -79,6 +79,6 @@ def A_Star_Search(initial_state, max_expanded=100000):
             heapq.heappush(frontier, child)
             generated_nodes += 1
 
-    return Solution(node, expanded_nodes, generated_nodes, start_time)
+    return solution(node, expanded_nodes, generated_nodes, start_time)
 
 

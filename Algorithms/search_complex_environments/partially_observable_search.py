@@ -3,10 +3,10 @@ import time
 import itertools
 
 from Core.Utils import *
-from Core.Action import Get_Actions
+from Core.Action import get_actions
 from Core.Node import Node
-from Core.Result import Solution
-from Core.Utils import Is_Goal, State_To_Tuple, Heuristic
+from Core.Result import solution
+from Core.Utils import is_goal, state_to_tuple, heuristic
 
 MAX_BELIEF_STATES = 4  # Số belief states tối đa suy ra từ partial obs
 
@@ -59,27 +59,27 @@ def generate_belief_states(partial_state: list, known_colors: list[int],
 
     return belief_states if belief_states else [[list(tube) for tube in partial_state]]
 
-def Belief_Key(nodes: list) -> frozenset:
+def belief_key(nodes: list) -> frozenset:
     """
     Key duy nhất cho một belief set (list các Node).
     Dùng frozenset of tuples — tương đương State_To_Tuple() nhưng cho cả tập.
     frozenset vì thứ tự các belief states không quan trọng.
     """
-    return frozenset(State_To_Tuple(n.state) for n in nodes)
+    return frozenset(state_to_tuple(n.state) for n in nodes)
 
 
-def Belief_H(nodes: list) -> int:
+def belief_h(nodes: list) -> int:
     """
     Heuristic cho belief set = max(h(s)) — pessimistic.
     Đảm bảo admissible: phải giải được state khó nhất thì mới xong.
     """
-    return max(Heuristic(n.state) for n in nodes)
+    return max(heuristic(n.state) for n in nodes)
 
 
-def Belief_Is_Goal(nodes: list) -> bool:
-    return all(Is_Goal(n.state) for n in nodes)
+def belief_is_goal(nodes: list) -> bool:
+    return all(is_goal(n.state) for n in nodes)
 
-def Belief_A_Star_Search(initial_state, known_colors, max_expanded=100000):
+def belief_a_star_search(initial_state, known_colors, max_expanded=100000):
     start_time = time.time()
 
     beliefs     = generate_belief_states(initial_state, known_colors)
@@ -87,10 +87,10 @@ def Belief_A_Star_Search(initial_state, known_colors, max_expanded=100000):
 
     counter   = itertools.count()
     g0        = 0
-    h0        = Belief_H(start_nodes)
+    h0        = belief_h(start_nodes)
 
     frontier  = [(h0, g0, next(counter), start_nodes)]
-    best_cost = {Belief_Key(start_nodes): g0}
+    best_cost = {belief_key(start_nodes): g0}
     reached   = set()
 
     expanded_nodes  = 0
@@ -98,7 +98,7 @@ def Belief_A_Star_Search(initial_state, known_colors, max_expanded=100000):
 
     while frontier and expanded_nodes < max_expanded:
         _, g, _, nodes = heapq.heappop(frontier)
-        key = Belief_Key(nodes)
+        key = belief_key(nodes)
 
         if nodes[0].cost != best_cost.get(key):
             continue
@@ -106,8 +106,8 @@ def Belief_A_Star_Search(initial_state, known_colors, max_expanded=100000):
             continue
 
         # Goal: TẤT CẢ states phải là goal
-        if Belief_Is_Goal(nodes):
-            return Solution(nodes[0], expanded_nodes, generated_nodes, start_time)
+        if belief_is_goal(nodes):
+            return solution(nodes[0], expanded_nodes, generated_nodes, start_time)
 
         reached.add(key)
         expanded_nodes += 1
@@ -116,7 +116,7 @@ def Belief_A_Star_Search(initial_state, known_colors, max_expanded=100000):
         # vì state đó vẫn có thể nhận action valid
         all_actions = set()
         for n in nodes:
-            for action in Get_Actions(n.state):
+            for action in get_actions(n.state):
                 all_actions.add(action)
 
         for action in all_actions:
@@ -124,9 +124,9 @@ def Belief_A_Star_Search(initial_state, known_colors, max_expanded=100000):
             action_cost  = None   # cost sau khi expand
 
             for n in nodes:
-                actions_for_n = list(Get_Actions(n.state))
+                actions_for_n = list(get_actions(n.state))
                 if action in actions_for_n:
-                    child = n.Expand(action)
+                    child = n.expand(action)
                     next_nodes.append(child)
                     action_cost = child.cost   # lấy cost từ node được expand
                 else:
@@ -136,7 +136,7 @@ def Belief_A_Star_Search(initial_state, known_colors, max_expanded=100000):
             if action_cost is None:
                 continue
 
-            child_key = Belief_Key(next_nodes)
+            child_key = belief_key(next_nodes)
             new_cost  = action_cost            # ← dùng cost thực, không nodes[0].cost
             old_cost  = best_cost.get(child_key, float("inf"))
 
@@ -146,16 +146,16 @@ def Belief_A_Star_Search(initial_state, known_colors, max_expanded=100000):
                 reached.remove(child_key)
 
             best_cost[child_key] = new_cost
-            priority = new_cost + Belief_H(next_nodes)
+            priority = new_cost + belief_h(next_nodes)
             heapq.heappush(frontier, (priority, new_cost, next(counter), next_nodes))
             generated_nodes += 1
 
     best_nodes = min(
         (item[3] for item in frontier),
-        key=Belief_H,
+        key=belief_h,
         default=start_nodes
     )
-    return Solution(best_nodes[0], expanded_nodes, generated_nodes, start_time)
+    return solution(best_nodes[0], expanded_nodes, generated_nodes, start_time)
 
 def partial_search(start):
     known_colors = [1, 1, 1, 1,
@@ -164,4 +164,4 @@ def partial_search(start):
                 4,4,4,4,
                 5,5,5,5]
     
-    return Belief_A_Star_Search(start, known_colors)
+    return belief_a_star_search(start, known_colors)

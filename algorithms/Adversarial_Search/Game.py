@@ -6,7 +6,7 @@ from algorithms.adversarial_search.Alpha_Beta_Pruning_Search import Alpha_Beta_P
 from algorithms.adversarial_search.Expectimax_Search import Expectimax_Search
 
 
-def Game(START, turn):  # True: May, False: Nguoi
+def game(START, turn):  # True: May, False: Nguoi
     node = Node(START)
     step = 0
 
@@ -18,15 +18,15 @@ def Game(START, turn):  # True: May, False: Nguoi
             print(i)
         print()
 
-        actions = Get_Actions(node.state)
-        if Is_Goal(node.state):
+        actions = get_actions(node.state)
+        if is_goal(node.state):
             if turn:  # toi luot may -> nguoi da win
                 print("Human win")
                 break
             else:  # toi luot nguoi -> may da win
                 print("Machine win")
                 break
-        elif len(actions) == 0 or node.Is_Cycle():  # khong the di tiep hoac lap lai trang thai cu -> hoa
+        elif len(actions) == 0 or node.is_cycle():  # khong the di tiep hoac lap lai trang thai cu -> hoa
             print("Draw")
             break
 
@@ -36,7 +36,7 @@ def Game(START, turn):  # True: May, False: Nguoi
             best_action = actions[0]
 
             for action in actions:
-                child = node.Expand(action)
+                child = node.expand(action)
                 # eval = Minimax_Search(child, False)
                 # eval = Alpha_Beta_Pruning_Search(child, -1, 1, False)
                 eval = Expectimax_Search(child, False)
@@ -45,7 +45,7 @@ def Game(START, turn):  # True: May, False: Nguoi
                     best_action = action
 
             print("Move:", best_action)
-            node = node.Expand(best_action)
+            node = node.expand(best_action)
 
         else:
             print("Human turn")
@@ -53,7 +53,7 @@ def Game(START, turn):  # True: May, False: Nguoi
                 i1, i2 = map(int, input("Move: ").split())
 
                 if (i1, i2) in actions:
-                    node = node.Expand((i1, i2))
+                    node = node.expand((i1, i2))
                     break
                 else:
                     print("Invalid move")

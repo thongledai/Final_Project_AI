@@ -15,9 +15,9 @@ class Result:
     depth: int = 0                       # Độ sâu lời giải
     runtime: float = 0                   # Thời gian chạy
 
-def Solution(node, explored, generated, start_time):
+def solution(node, explored, generated, start_time):
      return Result(
-        success=Is_Goal(node.Get_State()),
+        success=is_goal(node.Get_State()),
         path=node.Get_Path(),
         states=node.Get_States(),
         last_state=node.Get_State(),

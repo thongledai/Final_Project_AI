@@ -1,19 +1,19 @@
 import heapq
 import time
-from Core.Action import Get_Actions, Apply_Action
+from Core.Action import get_actions, apply_action
 from Core.Node import Node
-from Core.Result import Solution
-from Core.Utils import Is_Goal, State_To_Tuple, Heuristic
+from Core.Result import solution
+from Core.Utils import is_goal, state_to_tuple, heuristic
 
 
-def Greedy_Search(initial_state, max_expanded=100000):
+def greedy_search(initial_state, max_expanded=100000):
     start_time = time.time()
-    start = Node(initial_state, cost=Heuristic(initial_state))
+    start = Node(initial_state, cost=heuristic(initial_state))
 
     # Frontier chi chua Node. Voi Greedy, Node.cost la h(n).
     frontier = []
     heapq.heappush(frontier, start)
-    frontier_keys = {State_To_Tuple(initial_state)}
+    frontier_keys = {state_to_tuple(initial_state)}
     reached = set()
     expanded_nodes = 0
     generated_nodes = 1
@@ -21,21 +21,21 @@ def Greedy_Search(initial_state, max_expanded=100000):
 
     while frontier and expanded_nodes < max_expanded:
         node = heapq.heappop(frontier)
-        key = State_To_Tuple(node.state)
+        key = state_to_tuple(node.state)
         frontier_keys.discard(key)
 
         if key in reached:
             continue
 
-        if Is_Goal(node.state):
-            return Solution(node, expanded_nodes, generated_nodes, start_time)
+        if is_goal(node.state):
+            return solution(node, expanded_nodes, generated_nodes, start_time)
 
         reached.add(key)
         expanded_nodes += 1
 
-        for action in Get_Actions(node.state):
-            child_state = Apply_Action(node.state, action)
-            child_key = State_To_Tuple(child_state)
+        for action in get_actions(node.state):
+            child_state = apply_action(node.state, action)
+            child_key = state_to_tuple(child_state)
             if child_key in reached or child_key in frontier_keys:
                 continue
 
@@ -43,10 +43,10 @@ def Greedy_Search(initial_state, max_expanded=100000):
                 state=child_state,
                 parent=node,
                 action=action,
-                cost=Heuristic(child_state)
+                cost=heuristic(child_state)
             )
             heapq.heappush(frontier, child)
             frontier_keys.add(child_key)
             generated_nodes += 1
 
-    return Solution(node, expanded_nodes, generated_nodes, start_time)
+    return solution(node, expanded_nodes, generated_nodes, start_time)

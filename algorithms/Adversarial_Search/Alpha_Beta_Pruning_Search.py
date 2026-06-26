@@ -5,8 +5,8 @@ from Core.Result import *
 
 
 def Alpha_Beta_Pruning_Search(node, alpha, beta, maximizing_player):
-    actions = Get_Actions(node.state)
-    if Is_Goal(node.state):
+    actions = get_actions(node.state)
+    if is_goal(node.state):
         if maximizing_player:  # toi luot may -> May thua
             return -1
         else:  # toi luot nguoi -> May thang

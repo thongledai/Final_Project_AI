@@ -20,7 +20,7 @@ def forward_checking_search(start):
 
     node_final = search(node, explored, stats)
 
-    return Solution(
+    return solution(
         stats["max_cost_node"] if node_final is None else node_final,
         stats["expanded"],
         stats["generated"],

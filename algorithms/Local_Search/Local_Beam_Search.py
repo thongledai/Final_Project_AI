@@ -1,26 +1,26 @@
 import time
-from Core.Action import Get_Actions, Apply_Action
+from Core.Action import get_actions, apply_action
 from Core.Node import Node
-from Core.Result import Solution
-from Core.Utils import Is_Goal, Heuristic
+from Core.Result import solution
+from Core.Utils import is_goal, heuristic
 
 
-def _Child_Nodes(node):
+def _child_nodes(node):
     children = []
-    for action in Get_Actions(node.state):
-        child_state = Apply_Action(node.state, action)
+    for action in get_actions(node.state):
+        child_state = apply_action(node.state, action)
         children.append(Node(
             state=child_state,
             parent=node,
             action=action,
-            cost=Heuristic(child_state)
+            cost=heuristic(child_state)
         ))
     return children
 
 
-def Local_Beam_Search(initial_state, beam_width=3, max_steps=1000):
+def local_beam_search(initial_state, beam_width=3, max_steps=1000):
     start_time = time.time()
-    current_set = [Node(initial_state, cost=Heuristic(initial_state))]
+    current_set = [Node(initial_state, cost=heuristic(initial_state))]
     expanded_nodes = 0
     generated_nodes = 1
 
@@ -28,15 +28,15 @@ def Local_Beam_Search(initial_state, beam_width=3, max_steps=1000):
         neighbor_states = []
 
         for state in current_set:
-            children = _Child_Nodes(state)
+            children = _child_nodes(state)
             neighbor_states.extend(children)
 
             expanded_nodes += 1
             generated_nodes += len(children)
 
         for neighbor in neighbor_states:
-            if Is_Goal(neighbor.state):
-                return Solution(neighbor, expanded_nodes, generated_nodes, start_time)
+            if is_goal(neighbor.state):
+                return solution(neighbor, expanded_nodes, generated_nodes, start_time)
 
         if not neighbor_states:
             break
@@ -47,8 +47,8 @@ def Local_Beam_Search(initial_state, beam_width=3, max_steps=1000):
     current = min(
         current_set,
         key=lambda state: state.cost,
-        default=Node(initial_state, cost=Heuristic(initial_state)),
+        default=Node(initial_state, cost=heuristic(initial_state)),
     )
-    return Solution(current, expanded_nodes, generated_nodes, start_time)
+    return solution(current, expanded_nodes, generated_nodes, start_time)
 
 

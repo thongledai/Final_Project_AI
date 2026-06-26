@@ -1,34 +1,34 @@
 import random
 import time
-from Core.Action import Get_Actions, Apply_Action
+from Core.Action import get_actions, apply_action
 from Core.Node import Node
-from Core.Result import Solution
-from Core.Utils import Is_Goal, Heuristic
+from Core.Result import solution
+from Core.Utils import is_goal, heuristic
 
 
-def _Child_Nodes(node):
+def _child_nodes(node):
     children = []
-    for action in Get_Actions(node.state):
-        child_state = Apply_Action(node.state, action)
+    for action in get_actions(node.state):
+        child_state = apply_action(node.state, action)
         children.append(Node(
             state=child_state,
             parent=node,
             action=action,
-            cost=Heuristic(child_state)
+            cost=heuristic(child_state)
         ))
     return children
 
 
-def _Hill_Climb(start, max_steps, rng):
+def _hill_climb(start, max_steps, rng):
     current = start
     expanded = 0
     generated = 0
 
     for _ in range(max_steps):
-        if Is_Goal(current.state):
+        if is_goal(current.state):
             break
 
-        children = _Child_Nodes(current)
+        children = _child_nodes(current)
         expanded += 1
         generated += len(children)
 
@@ -47,7 +47,7 @@ def _Hill_Climb(start, max_steps, rng):
     return current, expanded, generated
 
 
-def Random_Restart_Hill_Climbing_Search(
+def random_restart_hill_climbing_search(
     initial_state,
     restarts=20,
     max_steps=500,
@@ -56,19 +56,19 @@ def Random_Restart_Hill_Climbing_Search(
 ):
     rng = random.Random(seed)
     start_time = time.time()
-    current = Node(initial_state, cost=Heuristic(initial_state))
+    current = Node(initial_state, cost=heuristic(initial_state))
     expanded_nodes = 0
     generated_nodes = 1
 
     for _ in range(restarts):
-        current = Node(initial_state, cost=Heuristic(initial_state))
-        current, expanded, generated = _Hill_Climb(current, max_steps, rng)
+        current = Node(initial_state, cost=heuristic(initial_state))
+        current, expanded, generated = _hill_climb(current, max_steps, rng)
         expanded_nodes += expanded
         generated_nodes += generated
 
-        if Is_Goal(current.state):
-            return Solution(current, expanded_nodes, generated_nodes, start_time)
+        if is_goal(current.state):
+            return solution(current, expanded_nodes, generated_nodes, start_time)
 
-    return Solution(current, expanded_nodes, generated_nodes, start_time)
+    return solution(current, expanded_nodes, generated_nodes, start_time)
 
 

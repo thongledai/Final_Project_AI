@@ -4,9 +4,9 @@ from Core.Utils import *
 from Core.Result import *
 
 
-def Minimax_Search(node, maximizing_player):
-    actions = Get_Actions(node.state)
-    if Is_Goal(node.state):
+def minimax_search(node, maximizing_player):
+    actions = get_actions(node.state)
+    if is_goal(node.state):
         if maximizing_player:  # toi luot may -> May thua
             return -1
         else:  # toi luot nguoi -> May thang
@@ -19,7 +19,7 @@ def Minimax_Search(node, maximizing_player):
         max_eval = -1
         for action in actions:
             child = node.Expand(action)
-            eval = Minimax_Search(child, False)
+            eval = minimax_search(child, False)
             max_eval = max(max_eval, eval)
         return max_eval
 
@@ -27,6 +27,6 @@ def Minimax_Search(node, maximizing_player):
         min_eval = 1
         for action in actions:
             child = node.Expand(action)
-            eval = Minimax_Search(child, True)
+            eval = minimax_search(child, True)
             min_eval = min(min_eval, eval)
         return min_eval

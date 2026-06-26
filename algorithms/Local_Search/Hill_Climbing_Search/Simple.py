@@ -1,31 +1,31 @@
 import time
-from Core.Action import Get_Actions, Apply_Action
+from Core.Action import get_actions, apply_action
 from Core.Node import Node
-from Core.Result import Solution
-from Core.Utils import Is_Goal, Heuristic
+from Core.Result import solution
+from Core.Utils import is_goal, heuristic
 
 
-def Simple_Hill_Climbing(initial_state, max_steps=1000):
+def simple_hill_climbing(initial_state, max_steps=1000):
     start_time = time.time()
-    current = Node(initial_state, cost=Heuristic(initial_state))
+    current = Node(initial_state, cost=heuristic(initial_state))
     expanded_nodes = 1
     generated_nodes = 1
 
     for _ in range(max_steps):
-        if Is_Goal(current.state):
-            return Solution(current, expanded_nodes, generated_nodes, start_time)
+        if is_goal(current.state):
+            return solution(current, expanded_nodes, generated_nodes, start_time)
 
         expanded_nodes += 1
-        current_value = Heuristic(current.state)
+        current_value = heuristic(current.state)
         next_node = None
 
-        for action in Get_Actions(current.state):
-            child_state = Apply_Action(current.state, action)
+        for action in get_actions(current.state):
+            child_state = apply_action(current.state, action)
             child = Node(
                 state=child_state,
                 parent=current,
                 action=action,
-                cost=Heuristic(child_state)
+                cost=heuristic(child_state)
             )
             generated_nodes += 1
 
@@ -38,5 +38,5 @@ def Simple_Hill_Climbing(initial_state, max_steps=1000):
 
         current = next_node
 
-    return Solution(current, expanded_nodes, generated_nodes, start_time)
+    return solution(current, expanded_nodes, generated_nodes, start_time)
 

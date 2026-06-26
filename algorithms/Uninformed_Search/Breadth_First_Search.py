@@ -10,8 +10,8 @@ from Core.Result import *
 def BFS(START):
     start_time=time.time()
     node=Node(START)
-    if Is_Goal(node.state):
-        return Solution(node,1,1, start_time)
+    if is_goal(node.state):
+        return solution(node,1,1, start_time)
     
     frontier = deque([node])
     explored = []
@@ -20,14 +20,14 @@ def BFS(START):
         node = frontier.popleft()
         explored.append(node.state)
 
-        actions = Get_Actions(node.state)
+        actions = get_actions(node.state)
         for action in actions:
-            child = node.Expand(action)
+            child = node.expand(action)
 
             if child.state not in explored and child not in frontier:
-                if Is_Goal(child.state):
-                    return Solution(child, len(explored), len(explored) + len(frontier), start_time)
+                if is_goal(child.state):
+                    return solution(child, len(explored), len(explored) + len(frontier), start_time)
                 frontier.append(child)
 
     # failure
-    return Solution(node, len(explored), len(explored) + len(frontier), start_time)
+    return solution(node, len(explored), len(explored) + len(frontier), start_time)
