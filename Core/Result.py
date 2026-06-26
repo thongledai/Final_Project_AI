@@ -18,14 +18,39 @@ class Result:
     runtime: float = 0                   # Thời gian chạy
 
 def solution(node, explored, generated, start_time):
-     return Result(
-        success=is_goal(node.get_state()),
-        path=node.get_path(),
-        states=node.get_states(),
-        last_state=node.get_state(),
-        cost=node.cost,
-        explored=explored,
-        generated=generated,
-        depth=node.get_depth(),
-        runtime=time.time() - start_time,
-    )
+    if isinstance(node, Node):
+        return Result(
+            success=is_goal(node.get_state()),
+            path=node.get_path(),
+            states= node.get_states(),
+            last_state=node.get_state(),
+            cost=node.get_cost(),
+            explored=explored,
+            generated=generated,
+            depth=node.get_depth(),
+            runtime=time.time() - start_time,
+        )
+    else:
+
+        # Chuẩn hóa nếu node là một đối tượng đơn lẻ
+        if not isinstance(node, (list, tuple)):
+            node = [node]
+            
+        # 1. Lấy danh sách states từ tất cả các node
+        all_node_states = [n.get_states() for n in node]
+        
+        # 2. Gộp chúng lại theo từng bước (step-by-step)
+        # Nếu node chỉ có 1 phần tử, zip(*) vẫn chạy đúng và trả về [[a], [b], [c]]
+        zipped_states = [list(step) for step in zip(*all_node_states)]
+
+        return Result(
+            success=is_goal(node[0].get_state()),
+            path=node[0].get_path(),
+            states= zipped_states,
+            last_state=node[0].get_state(),
+            cost=node[0].get_cost(),
+            explored=explored,
+            generated=generated,
+            depth=node[0].get_depth(),
+            runtime=time.time() - start_time,
+        )
