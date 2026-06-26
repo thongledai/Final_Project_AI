@@ -1,13 +1,12 @@
 from Core.Utils import START
 
-from algorithms.uninformed_search.breadth_first_search import *
-from algorithms.uninformed_search.depth_first_search import *
-
-from algorithms.informed_search.A_Star_Search import a_star_search
-
+from algorithms.uninformed_search.breadth_first_search import BFS
+from algorithms.uninformed_search.depth_first_search import DFS
+from algorithms.uninformed_search.iterative_deepening_search import IDS
+from algorithms.uninformed_search.uniform_cost_search import UCS
 
 if __name__ == "__main__":
-    result = a_star_search(START)
+    result = IDS(START)
 
     print("\n=== KET QUA TIM KIEM DFS ===")
     print(f"- Success          : {result.success}")
