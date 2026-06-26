@@ -1,10 +1,10 @@
 from Core.Utils import START
+
 from algorithms.uninformed_search.Breadth_First_Search import Bfs
 from algorithms.uninformed_search.Depth_First_Search import Dfs
 from algorithms.uninformed_search.Iterative_Deepening_Search import Ids
 from algorithms.uninformed_search.Uniform_Cost_Search import Ucs
 from algorithms.adversarial_search.Game import Game
-
 
 # if __name__ == "__main__":
 #     result = Dfs(START)
