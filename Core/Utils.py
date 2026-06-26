@@ -1,9 +1,4 @@
 ﻿import random
-from Core.Action import *
-from Core.Result import *
-from Core.Cost import *
-from Core.Node import *
-from Core.Utils import *
 
 # Số phần tử tối đa trong một lọ
 CAPACITY = 4
@@ -88,15 +83,15 @@ def is_goal(state):
     return True
 
 
-def child_nodes(node):
-    return [node.Expand(action) for action in get_actions(node.state)]
+# def child_nodes(node):
+#     return [node.Expand(action) for action in get_actions(node.state)]
 
 
-def best_child(node):
-    children = child_nodes(node)
-    if not children:
-        return None, []
-    return min(children, key=lambda child: (heuristic(child.state), child.cost)), children
+# def best_child(node):
+#     children = child_nodes(node)
+#     if not children:
+#         return None, []
+#     return min(children, key=lambda child: (heuristic(child.state), child.cost)), children
 
 
 def has_seen(node, seen):

@@ -1,8 +1,5 @@
-from Core.Action import *
-from Core.Result import *
-from Core.Cost import *
-from Core.Node import *
-from Core.Utils import *
+from Core.Action import get_steps, get_count_same_top
+from Core.Utils import CAPACITY
 
 # Chi phí di chuyển(thực tế)
 # g(x) = g(x) + 4 + số lượng phần tử còn lại - số lượng phần tử đổ thành công
