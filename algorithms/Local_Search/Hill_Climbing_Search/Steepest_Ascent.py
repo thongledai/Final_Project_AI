@@ -32,7 +32,3 @@ def Steepest_Ascent_Hill_Climbing_Search(initial_state, max_steps=1000):
         current = candidate
 
     return Solution(current, expanded_nodes, generated_nodes, start_time)
-
-
-def Search(initial_state, max_steps=1000):
-    return Steepest_Ascent_Hill_Climbing_Search(initial_state, max_steps)

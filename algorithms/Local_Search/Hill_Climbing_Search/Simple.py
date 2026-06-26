@@ -2,7 +2,7 @@ import time
 from Core.Action import Get_Actions
 from Core.Node import Node
 from Core.Result import Solution
-from Core.Utils import Is_Goal, State_To_Tuple, Heuristic
+from Core.Utils import Is_Goal, Heuristic
 
 
 def Simple_Hill_Climbing(initial_state, max_steps=1000):
@@ -24,16 +24,13 @@ def Simple_Hill_Climbing(initial_state, max_steps=1000):
             generated_nodes += 1
 
             if Heuristic(child.state) < current_value:
-                next_state = child
+                next_node = child
                 break
 
         if next_state is None:
             break
 
-        current = next_state
+        current = next_node
 
     return Solution(current, expanded_nodes, generated_nodes, start_time)
 
-
-def Search(initial_state, max_steps=1000):
-    return Simple_Hill_Climbing(initial_state, max_steps)

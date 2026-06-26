@@ -26,6 +26,7 @@ def A_Star_Search(initial_state, max_expanded=100000):
 
     expanded_nodes = 0
     generated_nodes = 1
+    node = start
 
     while frontier and expanded_nodes < max_expanded:
         # Lấy node có f(n) nhỏ nhất ra khỏi FRONTIER.
@@ -73,9 +74,6 @@ def A_Star_Search(initial_state, max_expanded=100000):
             heapq.heappush(frontier, (priority, new_cost, next(counter), child))
             generated_nodes += 1
 
-    best_node = min((item[3] for item in frontier), key=lambda n: Heuristic(n.state), default=start)
-    return Solution(best_node, expanded_nodes, generated_nodes, start_time)
+    return Solution(node, expanded_nodes, generated_nodes, start_time)
 
 
-def Search(initial_state, max_expanded=100000):
-    return A_Star_Search(initial_state, max_expanded)
