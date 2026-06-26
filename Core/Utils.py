@@ -1,7 +1,8 @@
 ﻿import random
-from Core.Action import get_actions
+from Core.Action import *
 from Core.Result import *
-
+from Core.Cost import *
+from Core.Node import *
 
 # Số phần tử tối đa trong một lọ
 CAPACITY = 4
