@@ -1,4 +1,5 @@
 import time
+import random
 
 # Số phần tử tối đa trong một lọ
 CAPACITY = 4
@@ -12,47 +13,56 @@ START = [[1, 3, 2, 2],      # lọ 0
          [1, 3, 2, 1],      # lọ 2
          [          ]]      # lọ 3
 
+# Trạng thái ban đầu random
+nums = [1]*4 + [2]*4 + [3]*4
+random.shuffle(nums)
+START_RANDOM = [
+    nums[0:4],
+    nums[4:8],
+    nums[8:12],
+    []             
+]
 
 # Sao chép trạng thái
-def copy_state(state):
+def Copy_State(state):
     return [row[:] for row in state]
 
 
 # Chuyển trạng thái từ list sang tuple
-def state_to_tuple(state):
+def State_To_Tuple(state):
     return tuple(tuple(row) for row in state)
 
 
 # Lấy vị trí của phần tử trên cùng của lọ i
-def get_top_index(state, i):
+def Get_Top_Index(state, i):
     return len(state[i]) - 1
 
 
 # Lấy màu của phần tử trên cùng của lọ i
-def get_top_value(state,i):
-    if is_empty(state, i):
+def Get_Top_Value(state,i):
+    if Is_Empty(state, i):
         return None
     return state[i][-1]
 
 
 # Kiểm tra xem lọ i có rỗng không
-def is_empty(state, i):
+def Is_Empty(state, i):
     return len(state[i])==0
 
 
 # Kiểm tra xem lọ i có đầy không
-def is_full(state,i):
+def Is_Full(state,i):
     return len(state[i])==CAPACITY
 
 
 # Đếm số lượng phần tử rỗng trong lọ i
-def empty_slots(state,i):
+def Empty_Slots(state,i):
     return CAPACITY-len(state[i])
 
 
 # Đếm số phần tử cùng màu liên tiếp ở top của lọ i
-def get_count_same_top(state,i):
-    j=get_top_index(state,i)
+def Get_Count_Same_Top(state,i):
+    j=Get_Top_Index(state,i)
     if j==-1:
         return 0
     else:
@@ -65,14 +75,14 @@ def get_count_same_top(state,i):
 
 
 # Kiểm tra xem trạng thái hiện tại có phải là trạng thái mục tiêu không
-def is_goal(state):
+def Is_Goal(state):
     for i in state:
         if len(i) == 0:
             continue
         if len(i) != CAPACITY or len(set(i)) != 1:
             return False
     return True
-def heuristic(state):
+def Heuristic(state):
     # h(n) trong bài này là điểm đánh giá trạng thái còn lộn xộn bao nhiêu
     # Lọ rỗng -> +0
     # Lọ đầy 4 ô và cùng màu -> +0
@@ -98,27 +108,37 @@ def heuristic(state):
     return score
 
 
-def build_result(node, success, expanded_nodes, generated_nodes, start_time):
-    from Core.Result import Solution
+def Build_Result(node, success, expanded_nodes, generated_nodes, start_time):
+    from Core.Result import Result
 
-    return Solution(node, success, expanded_nodes, generated_nodes, start_time)
+    return Result(
+        success=success,
+        path=node.Get_Path(),
+        states=node.Get_States(),
+        last_state=node.Get_State(),
+        cost=node.cost,
+        explored=expanded_nodes,
+        generated=generated_nodes,
+        depth=node.Get_Depth(),
+        runtime=time.time() - start_time,
+    )
 
 
-def child_nodes(node):
-    from Core.Action import get_actions
+def Child_Nodes(node):
+    from Core.Action import Get_Actions
 
-    return [node.expand(action) for action in get_actions(node.state)]
+    return [node.Expand(action) for action in Get_Actions(node.state)]
 
 
-def best_child(node):
-    children = child_nodes(node)
+def Best_Child(node):
+    children = Child_Nodes(node)
     if not children:
         return None, []
-    return min(children, key=lambda child: (heuristic(child.state), child.cost)), children
+    return min(children, key=lambda child: (Heuristic(child.state), child.cost)), children
 
 
-def has_seen(node, seen):
-    key = state_to_tuple(node.state)
+def Has_Seen(node, seen):
+    key = State_To_Tuple(node.state)
     if key in seen:
         return True
     seen.add(key)
