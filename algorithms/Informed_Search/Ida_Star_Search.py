@@ -31,7 +31,7 @@ def Ida_Star_Search(initial_state, max_depth=80):
         next_limit = float("inf")
 
         for action in Get_Actions(node.state):
-            child = node.Expand(action)
+            child = node.Expand(action, cost_function="g(x)")
             generated_nodes += 1
             result, found_node = Dfs(child, limit)
 

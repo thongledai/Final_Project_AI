@@ -1,7 +1,6 @@
 import heapq
 import time
-from Core.Action import Get_Actions, Apply_Action
-from Core.Cost import Step_Cost
+from Core.Action import Get_Actions
 from Core.Node import Node
 from Core.Result import Solution
 from Core.Utils import Is_Goal, State_To_Tuple, Heuristic
@@ -31,12 +30,12 @@ def A_Star_Search(initial_state, max_expanded=100000):
         # Lấy node có f(n) nhỏ nhất ra khỏi FRONTIER.
         node = heapq.heappop(frontier)
         node_key = State_To_Tuple(node.state)
-        g_node = best_g.get(node_key)
+        g_node = best_g[node_key]
 
         # Nếu node này không còn mang cost tốt nhất thì bỏ qua.
         # Trường hợp này xảy ra khi cùng một trạng thái đã được tìm thấy lại
         # bằng đường đi rẻ hơn và bản cũ vẫn còn nằm trong heap.
-        if  node.cost != g_node + Heuristic(node.state):
+        if node.cost != g_node + Heuristic(node.state):
             continue
 
         # Nếu trạng thái này đã mở rộng rồi và không có cost tốt hơn thì bỏ qua.
@@ -51,11 +50,11 @@ def A_Star_Search(initial_state, max_expanded=100000):
         expanded_nodes += 1
 
         for action in Get_Actions(node.state):
-            child_state = Apply_Action(node.state, action)
-            child_key = State_To_Tuple(child_state)
+            child = node.Expand(action, cost_function="f(x)")
+            child_key = State_To_Tuple(child.state)
 
             # g_child = g(n) + cost(action).
-            g_child = g_node + Step_Cost(node.state, action)
+            g_child = child.cost - Heuristic(child.state)
             old_g = best_g.get(child_key, float("inf"))
 
             # Nếu đã có đường đi tới m tốt hơn hoặc bằng thì bỏ qua m.
@@ -68,14 +67,7 @@ def A_Star_Search(initial_state, max_expanded=100000):
                 reached.remove(child_key)
 
             # Tạo Node con với cost là f(child), vì heapq so sánh theo Node.cost.
-            f_child = g_child + Heuristic(child_state)
             best_g[child_key] = g_child
-            child = Node(
-                state=child_state,
-                parent=node,
-                action=action,
-                cost=f_child
-            )
             heapq.heappush(frontier, child)
             generated_nodes += 1
 

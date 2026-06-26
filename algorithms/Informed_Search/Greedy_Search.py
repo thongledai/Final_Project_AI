@@ -1,6 +1,6 @@
 import heapq
 import time
-from Core.Action import Get_Actions, Apply_Action
+from Core.Action import Get_Actions
 from Core.Node import Node
 from Core.Result import Solution
 from Core.Utils import Is_Goal, State_To_Tuple, Heuristic
@@ -34,17 +34,11 @@ def Greedy_Search(initial_state, max_expanded=100000):
         expanded_nodes += 1
 
         for action in Get_Actions(node.state):
-            child_state = Apply_Action(node.state, action)
-            child_key = State_To_Tuple(child_state)
+            child = node.Expand(action, cost_function="h(x)")
+            child_key = State_To_Tuple(child.state)
             if child_key in reached or child_key in frontier_keys:
                 continue
 
-            child = Node(
-                state=child_state,
-                parent=node,
-                action=action,
-                cost=Heuristic(child_state)
-            )
             heapq.heappush(frontier, child)
             frontier_keys.add(child_key)
             generated_nodes += 1

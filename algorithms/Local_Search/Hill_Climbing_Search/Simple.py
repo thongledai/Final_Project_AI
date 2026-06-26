@@ -1,5 +1,5 @@
 import time
-from Core.Action import Get_Actions, Apply_Action
+from Core.Action import Get_Actions
 from Core.Node import Node
 from Core.Result import Solution
 from Core.Utils import Is_Goal, Heuristic
@@ -20,13 +20,7 @@ def Simple_Hill_Climbing(initial_state, max_steps=1000):
         next_node = None
 
         for action in Get_Actions(current.state):
-            child_state = Apply_Action(current.state, action)
-            child = Node(
-                state=child_state,
-                parent=current,
-                action=action,
-                cost=Heuristic(child_state)
-            )
+            child = current.Expand(action, cost_function="h(x)")
             generated_nodes += 1
 
             if child.cost < current_value:
