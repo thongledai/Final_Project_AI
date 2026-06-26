@@ -2,6 +2,7 @@ import time
 from dataclasses import dataclass
 from typing import List
 from Core.Node import *
+from Core.Utils import is_goal
 
 
 @dataclass

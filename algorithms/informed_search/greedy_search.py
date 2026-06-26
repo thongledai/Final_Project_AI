@@ -6,7 +6,7 @@ from Core.Utils import *
 from Core.Result import *
 
 
-def Greedy_Search(initial_state, max_expanded=100000):
+def greedy_search(initial_state, max_expanded=100000):
     start_time = time.time()
     node = Node(initial_state, cost=heuristic(initial_state))
 
@@ -33,7 +33,7 @@ def Greedy_Search(initial_state, max_expanded=100000):
         expanded_nodes += 1
 
         for action in get_actions(node.state):
-            child = node.Expand(action, "h(x)")
+            child = node.expand(action, "h(x)")
             child_key = state_to_tuple(child.state)
             if child_key in explored or child_key in frontier_keys:
                 continue

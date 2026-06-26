@@ -6,8 +6,8 @@ from Core.Utils import *
 from Core.Action import get_actions
 from Core.Node import Node
 from Core.Result import solution
-from Core.Utils import is_goal, state_to_tuple, heuristic
-
+from Core.Utils import is_goal, state_to_tuple
+from Core.Cost import heuristic
 MAX_BELIEF_STATES = 4  # Số belief states tối đa suy ra từ partial obs
 
 def generate_belief_states(partial_state: list, known_colors: list[int],

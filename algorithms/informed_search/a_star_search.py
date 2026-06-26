@@ -1,7 +1,7 @@
 import heapq
 import time
 from Core.Node import *
-from Core.Action import *
+from Core.Action import get_actions
 from Core.Utils import *
 from Core.Result import *
 
@@ -39,7 +39,7 @@ def a_star_search(initial_state, max_expanded=100000):
         expanded_nodes += 1
 
         for action in get_actions(node.state):
-            child = node.Expand(action, cost="f(x)")
+            child = node.expand(action, cost="f(x)")
             child_key = state_to_tuple(child.state)
 
             # g_child = g(n) + cost(action).

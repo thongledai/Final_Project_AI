@@ -27,9 +27,7 @@ def copy_state(state):
     return [row[:] for row in state]
 
 
-# Chuyển trạng thái từ list sang tuple
-def state_to_tuple(state):
-    return tuple(tuple(row) for row in state)
+
 
 
 # Lấy vị trí của phần tử trên cùng của lọ i
@@ -82,16 +80,20 @@ def is_goal(state):
             return False
     return True
 
+from Core.Cost import heuristic
+from Core.Action import get_actions
+def child_nodes(node):
+    return [node.Expand(action) for action in get_actions(node.state)]
 
-# def child_nodes(node):
-#     return [node.Expand(action) for action in get_actions(node.state)]
+# Chuyển trạng thái từ list sang tuple
+def state_to_tuple(state):
+    return tuple(tuple(row) for row in state)
 
-
-# def best_child(node):
-#     children = child_nodes(node)
-#     if not children:
-#         return None, []
-#     return min(children, key=lambda child: (heuristic(child.state), child.cost)), children
+def best_child(node):
+    children = child_nodes(node)
+    if not children:
+        return None, []
+    return min(children, key=lambda child: (heuristic(child.state), child.cost)), children
 
 
 def has_seen(node, seen):
@@ -100,6 +102,7 @@ def has_seen(node, seen):
         return True
     seen.add(key)
     return False
+
 
 
 

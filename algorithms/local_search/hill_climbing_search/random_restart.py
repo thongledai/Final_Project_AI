@@ -9,7 +9,7 @@ from Core.Utils import *
 def _child_nodes(node):
     children = []
     for action in get_actions(node.state):
-        children.append(node.expand(action, cost_function="h(x)"))
+        children.append(node.expand(action, "h(x)"))
     return children
 
 
@@ -50,12 +50,12 @@ def random_restart_hill_climbing_search(
 ):
     rng = random.Random(seed)
     start_time = time.time()
-    current = Node(initial_state, cost=heuristic(initial_state))
+    current = Node(initial_state, heuristic(initial_state))
     expanded_nodes = 0
     generated_nodes = 1
 
     for _ in range(restarts):
-        current = Node(initial_state, cost=heuristic(initial_state))
+        current = Node(initial_state, heuristic(initial_state))
         current, expanded, generated = _hill_climb(current, max_steps, rng)
         expanded_nodes += expanded
         generated_nodes += generated
