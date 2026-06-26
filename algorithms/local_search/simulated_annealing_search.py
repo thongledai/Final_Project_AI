@@ -1,16 +1,9 @@
-import math
+from math import exp
 import time
 from Core.Action import *
 from Core.Node import *
 from Core.Result import *
 from Core.Utils import *
-
-
-def _child_nodes(node):
-    children = []
-    for action in get_actions(node.state):
-        children.append(node.expand(action, "h(x)"))
-    return children
 
 
 def simulated_annealing_search(
@@ -31,7 +24,7 @@ def simulated_annealing_search(
         if is_goal(current.state):
             return solution(current, expanded_nodes, generated_nodes, start_time)
 
-        children = _child_nodes(current)
+        children = child_nodes(current)
         expanded_nodes += 1
         generated_nodes += len(children)
 
@@ -44,7 +37,7 @@ def simulated_annealing_search(
         if delta < 0:
             current = next_state
         else:
-            probability = math.exp(-delta / temperature)
+            probability = exp(-delta / temperature)
             if rng.random() < probability:
                 current = next_state
 

@@ -6,40 +6,35 @@ from Core.Utils import *
 from Core.Result import *
 
 
-def greedy_search(initial_state, max_expanded=100000):
+def greedy_search(START):
     start_time = time.time()
-    node = Node(initial_state, cost=heuristic(initial_state))
+    node = Node(START, cost=heuristic(START))
 
-    # Frontier chi chua Node. Voi Greedy, Node.cost la h(n).
     frontier = []
     heapq.heappush(frontier, node)
-    frontier_keys = {state_to_tuple(initial_state)}
-    explored = set()
-    expanded_nodes = 0
-    generated_nodes = 1
+    frontier_set = {state_to_tuple(START)}
+    explored_set = set()
 
-    while frontier and expanded_nodes < max_expanded:
+    while frontier and len(explored_set) < MAX_STEPS:
         node = heapq.heappop(frontier)
-        key = state_to_tuple(node.state)
-        frontier_keys.discard(key)
+        node_tuple = state_to_tuple(node.state)
+        frontier_set.discard(node_tuple)
 
-        if key in explored:
+        if node_tuple in explored_set:
             continue
 
         if is_goal(node.state):
-            return solution(node, expanded_nodes, generated_nodes, start_time)
+            return solution(node, len(explored_set), len(explored_set) + len(frontier) , start_time)
 
-        explored.add(key)
-        expanded_nodes += 1
+        explored_set.add(node_tuple)
 
         for action in get_actions(node.state):
             child = node.expand(action, "h(x)")
-            child_key = state_to_tuple(child.state)
-            if child_key in explored or child_key in frontier_keys:
+            child_tuple = state_to_tuple(child.state)
+            if child_tuple in explored_set or child_tuple in frontier_set:
                 continue
 
             heapq.heappush(frontier, child)
-            frontier_keys.add(child_key)
-            generated_nodes += 1
+            frontier_set.add(child_tuple)
 
-    return solution(node, expanded_nodes, generated_nodes, start_time)
+    return solution(node, len(explored_set), len(explored_set) + len(frontier), start_time)

@@ -6,10 +6,10 @@ from Core.Result import *
 
 FOUND = object()
 
-def ida_star_search(initial_state, max_depth=80):
+def ida_star_search(START):
     start_time = time.time()
-    start = Node(initial_state)
-    bound = heuristic(initial_state)
+    start = Node(START)
+    bound = heuristic(START)
     expanded_nodes = 0
     generated_nodes = 1
 
@@ -24,7 +24,7 @@ def ida_star_search(initial_state, max_depth=80):
         if is_goal(node.state):
             return FOUND, node
 
-        if node.get_depth() >= max_depth:
+        if node.get_depth() >= MAX_STEPS:
             return float("inf"), None
 
         expanded_nodes += 1

@@ -1,4 +1,4 @@
-from Core.Action import apply_action
+from Core.Action import apply_action, get_actions
 from Core.Cost import *
 
 class Node:
@@ -145,3 +145,9 @@ class Node:
                 return True
             ancestor=ancestor.parent
         return False
+    
+def child_nodes(node):
+    children = []
+    for action in get_actions(node.state):
+        children.append(node.expand(action, "h(x)"))
+    return children

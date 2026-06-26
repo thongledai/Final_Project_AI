@@ -8,14 +8,13 @@ from Core.Node import Node
 from Core.Result import solution
 from Core.Utils import is_goal, state_to_tuple
 from Core.Cost import heuristic
-MAX_BELIEF_STATES = 4  # Số belief states tối đa suy ra từ partial obs
+MAX_BELIEF_STATES = 2  # Số belief states tối đa suy ra từ partial obs
 
+
+# Nhận vào partial_state là list 2D (list of lists).
+# Trả về list các possible states, mỗi state cũng là list 2D.
 def generate_belief_states(partial_state: list, known_colors: list[int],
                            max_beliefs: int = MAX_BELIEF_STATES) -> list[list]:
-    """
-    Nhận vào partial_state là list 2D (list of lists).
-    Trả về list các possible states, mỗi state cũng là list 2D.
-    """
     observed = []
     unknown_positions = []  # (tube_idx, slot_idx)
 
@@ -59,25 +58,23 @@ def generate_belief_states(partial_state: list, known_colors: list[int],
 
     return belief_states if belief_states else [[list(tube) for tube in partial_state]]
 
+
+# Key duy nhất cho một belief set (list các Node).
+# Dùng frozenset of tuples — tương đương State_To_Tuple() nhưng cho cả tập.
+# frozenset vì thứ tự các belief states không quan trọng.
 def belief_key(nodes: list) -> frozenset:
-    """
-    Key duy nhất cho một belief set (list các Node).
-    Dùng frozenset of tuples — tương đương State_To_Tuple() nhưng cho cả tập.
-    frozenset vì thứ tự các belief states không quan trọng.
-    """
     return frozenset(state_to_tuple(n.state) for n in nodes)
 
 
+# Heuristic cho belief set = max(h(s)) — pessimistic.
+# Đảm bảo admissible: phải giải được state khó nhất thì mới xong.
 def belief_h(nodes: list) -> int:
-    """
-    Heuristic cho belief set = max(h(s)) — pessimistic.
-    Đảm bảo admissible: phải giải được state khó nhất thì mới xong.
-    """
     return max(heuristic(n.state) for n in nodes)
 
 
 def belief_is_goal(nodes: list) -> bool:
     return all(is_goal(n.state) for n in nodes)
+
 
 def belief_a_star_search(initial_state, known_colors, max_expanded=100000):
     start_time = time.time()
@@ -159,9 +156,9 @@ def belief_a_star_search(initial_state, known_colors, max_expanded=100000):
 
 def partial_search(start):
     known_colors = [1, 1, 1, 1,
-                2, 2, 2, 2,
-                3, 3, 3, 3,
-                4,4,4,4,
-                5,5,5,5]
+                    2, 2, 2, 2,
+                    3, 3, 3, 3,
+                    4, 4, 4, 4,
+                    5, 5, 5, 5]
     
     return belief_a_star_search(start, known_colors)

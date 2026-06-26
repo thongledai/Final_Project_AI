@@ -5,12 +5,6 @@ from Core.Result import *
 from Core.Utils import *
 
 
-def _child_nodes(node):
-    children = []
-    for action in get_actions(node.state):
-        children.append(node.expand(action, "h(x)"))
-    return children
-
 
 def local_beam_search(initial_state, beam_width=3, max_steps=1000):
     start_time = time.time()
@@ -22,7 +16,7 @@ def local_beam_search(initial_state, beam_width=3, max_steps=1000):
         neighbor_states = []
 
         for state in current_set:
-            children = _child_nodes(state)
+            children = child_nodes(state)
             neighbor_states.extend(children)
 
             expanded_nodes += 1

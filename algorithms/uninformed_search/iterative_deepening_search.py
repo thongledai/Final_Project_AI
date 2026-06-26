@@ -13,19 +13,19 @@ def iterative_deepening_search(START):
     while True:
         result = depth_limited_search(START, depth)
         if result != "cutoff":
-            result.runtime = time.time() - start_time
             return result
         depth+=1
-        
 
+        
 # Depth Limited Search
 def depth_limited_search(START, limit):
     node = Node(START)
     frontier = deque([node])
     explored = []
 
-    result = solution(node, len(explored), len(explored) + len(frontier), start_time)
+    result = "failure" 
     while frontier:
+        last_node=node
         node=frontier.pop()
         explored.append(node.state)
 
@@ -41,5 +41,7 @@ def depth_limited_search(START, limit):
                 
                 if not child.is_cycle():
                     frontier.append(child)
-
+    if result != "cutoff":
+        return solution(last_node, len(explored), len(explored) + len(frontier), start_time)
     return result
+

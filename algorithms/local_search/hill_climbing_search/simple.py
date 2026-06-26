@@ -5,32 +5,28 @@ from Core.Result import *
 from Core.Utils import *
 
 
-def simple_hill_climbing(initial_state, max_steps=1000):
+def simple_hill_climbing(START):
     start_time = time.time()
-    current = Node(initial_state, cost=heuristic(initial_state))
-    expanded_nodes = 1
+    current = Node(START, cost=heuristic(START))
+    explored_nodes = 0
     generated_nodes = 1
 
-    for _ in range(max_steps):
+    for _ in range(MAX_STEPS):
         if is_goal(current.state):
-            return solution(current, expanded_nodes, generated_nodes, start_time)
-
-        expanded_nodes += 1
-        current_value = heuristic(current.state)
+            return solution(current, explored_nodes, generated_nodes, start_time)
+        explored_nodes += 1
         next_node = None
-
-        for action in get_actions(current.state):
-            child = current.expand(action,"h(x)")           
+        
+        children = child_nodes(current)
+        for child in children:         
             generated_nodes += 1
 
-            if child.cost < current_value:
+            if child.get_cost() < current.get_cost():
                 next_node = child
                 break
 
         if next_node is None:
             break
-
         current = next_node
 
-    return solution(current, expanded_nodes, generated_nodes, start_time)
-
+    return solution(current, explored_nodes, generated_nodes, start_time)

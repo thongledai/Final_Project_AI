@@ -4,12 +4,18 @@
 CAPACITY = 4
 # Số lọ
 QUANTITY = 4
+# Số trạng thái tối đa
+MAX_STEPS = 1000
 
+# # Trạng thái ban đầu
+# START = [[1, 3, 2, 2],      # lọ 0
+#          [3, 2, 1, 3],      # lọ 1
+#          [1, 3, 2, 1],      # lọ 2
+#          [          ]]      # lọ 3
 
-# Trạng thái ban đầu
 START = [[1, 3, 2, 2],      # lọ 0
          [3, 2, 1, 3],      # lọ 1
-         [1, 3, 2, 1],      # lọ 2
+         [3, 2, 1, 1],      # lọ 2
          [          ]]      # lọ 3
 
 # Trạng thái ban đầu random
@@ -82,18 +88,11 @@ def is_goal(state):
 
 from Core.Cost import heuristic
 from Core.Action import get_actions
-def child_nodes(node):
-    return [node.Expand(action) for action in get_actions(node.state)]
+
 
 # Chuyển trạng thái từ list sang tuple
 def state_to_tuple(state):
     return tuple(tuple(row) for row in state)
-
-def best_child(node):
-    children = child_nodes(node)
-    if not children:
-        return None, []
-    return min(children, key=lambda child: (heuristic(child.state), child.cost)), children
 
 
 def has_seen(node, seen):
