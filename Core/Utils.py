@@ -1,4 +1,5 @@
 import time
+import random
 
 # Số phần tử tối đa trong một lọ
 CAPACITY = 4
@@ -12,6 +13,15 @@ START = [[1, 3, 2, 2],      # lọ 0
          [1, 3, 2, 1],      # lọ 2
          [          ]]      # lọ 3
 
+# Trạng thái ban đầu random
+nums = [1]*4 + [2]*4 + [3]*4
+random.shuffle(nums)
+START_RANDOM = [
+    nums[0:4],
+    nums[4:8],
+    nums[8:12],
+    []             
+]
 
 # Sao chép trạng thái
 def Copy_State(state):
