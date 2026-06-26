@@ -1,5 +1,5 @@
 from Core.Utils import START
-# ==========================================
+from algorithms.local_search.hill_climbing_search.random_restart import random_restart_hill_climbing_search as random_restart
 # 1. ADVERSARIAL SEARCH
 # ==========================================
 
@@ -43,7 +43,7 @@ from algorithms.constraint_satisfaction_search.forward_checking_search import fo
 
 
 if __name__ == "__main__":
-    result = forward_checking_search(START)
+    result = random_restart(START)
 
     print("\n=== KET QUA TIM KIEM ===")
     print(f"- Success          : {result.success}")
