@@ -58,3 +58,4 @@ from algorithms.constraint_satisfaction_search.forward_checking_search import fo
 
 if __name__ == "__main__":
     game(START, False, alpha_beta_pruning_search)
+
