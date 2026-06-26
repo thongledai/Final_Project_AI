@@ -1,33 +1,26 @@
 import random
 import time
+from Core.Action import Get_Actions, Apply_Action
 from Core.Node import Node
 from Core.Result import Solution
-from Core.Utils import Is_Goal, State_To_Tuple,Best_Child, Child_Nodes, Heuristic
+from Core.Utils import Is_Goal, Heuristic
 
 
-def _Random_Walk(start, steps, rng):
+def _Child_Nodes(node):
+    children = []
+    for action in Get_Actions(node.state):
+        child_state = Apply_Action(node.state, action)
+        children.append(Node(
+            state=child_state,
+            parent=node,
+            action=action,
+            cost=Heuristic(child_state)
+        ))
+    return children
+
+
+def _Hill_Climb(start, max_steps, rng):
     current = start
-    seen = {State_To_Tuple(current.state)}
-    generated = 1
-
-    for _ in range(steps):
-        candidates = [
-            child
-            for child in Child_Nodes(current)
-            if State_To_Tuple(child.state) not in seen
-        ]
-        generated += len(candidates)
-        if not candidates:
-            break
-        current = rng.choice(candidates)
-        seen.add(State_To_Tuple(current.state))
-
-    return current, generated
-
-
-def _Hill_Climb(start, max_steps):
-    current = start
-    seen = {State_To_Tuple(current.state)}
     expanded = 0
     generated = 0
 
@@ -35,18 +28,21 @@ def _Hill_Climb(start, max_steps):
         if Is_Goal(current.state):
             break
 
-        candidate, children = Best_Child(current)
+        children = _Child_Nodes(current)
         expanded += 1
         generated += len(children)
 
-        if candidate is None or Heuristic(candidate.state) >= Heuristic(current.state):
+        better_neighbors = [
+            child
+            for child in children
+            if child.cost < current.cost
+        ]
+
+        if not better_neighbors:
             break
 
-        key = State_To_Tuple(candidate.state)
-        if key in seen:
-            break
-        seen.add(key)
-        current = candidate
+        next_state = rng.choice(better_neighbors)
+        current = next_state
 
     return current, expanded, generated
 
@@ -60,36 +56,19 @@ def Random_Restart_Hill_Climbing_Search(
 ):
     rng = random.Random(seed)
     start_time = time.time()
-    root = Node(initial_state)
-    best = root
+    current = Node(initial_state, cost=Heuristic(initial_state))
     expanded_nodes = 0
-    generated_nodes = 0
+    generated_nodes = 1
 
-    for restart in range(restarts + 1):
-        if restart == 0:
-            start = root
-        else:
-            start, generated = _Random_Walk(root, random_walk_steps, rng)
-            generated_nodes += generated
-
-        candidate, expanded, generated = _Hill_Climb(start, max_steps)
+    for _ in range(restarts):
+        current = Node(initial_state, cost=Heuristic(initial_state))
+        current, expanded, generated = _Hill_Climb(current, max_steps, rng)
         expanded_nodes += expanded
         generated_nodes += generated
 
-        if Heuristic(candidate.state) < Heuristic(best.state):
-            best = candidate
+        if Is_Goal(current.state):
+            return Solution(current, expanded_nodes, generated_nodes, start_time)
 
-        if Is_Goal(candidate.state):
-            return Solution(candidate, expanded_nodes, generated_nodes, start_time)
-
-    return Solution(best, expanded_nodes, generated_nodes, start_time)
+    return Solution(current, expanded_nodes, generated_nodes, start_time)
 
 
-def Search(initial_state, restarts=20, max_steps=500, random_walk_steps=10, seed=None):
-    return Random_Restart_Hill_Climbing_Search(
-        initial_state,
-        restarts,
-        max_steps,
-        random_walk_steps,
-        seed,
-    )
