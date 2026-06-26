@@ -1,4 +1,4 @@
-import time
+﻿import time
 import random
 
 # Số phần tử tối đa trong một lọ
@@ -106,23 +106,6 @@ def Heuristic(state):
         score += len(set(tube)) - 1
 
     return score
-
-
-def Build_Result(node, success, expanded_nodes, generated_nodes, start_time):
-    from Core.Result import Result
-
-    return Result(
-        success=success,
-        path=node.Get_Path(),
-        states=node.Get_States(),
-        last_state=node.Get_State(),
-        cost=node.cost,
-        explored=expanded_nodes,
-        generated=generated_nodes,
-        depth=node.Get_Depth(),
-        runtime=time.time() - start_time,
-    )
-
 
 def Child_Nodes(node):
     from Core.Action import Get_Actions
