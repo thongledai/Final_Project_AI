@@ -6,47 +6,55 @@ from Core.Utils import *
 from Core.Result import *
 
 
+def _g_cost(node):
+    return node.cost - heuristic(node.state)
+
+
 def a_star_search(START):
     start_time = time.time()
+
     node = Node(START, cost=heuristic(START))
+    node_tuple = state_to_tuple(node.state)
+
     frontier = []
     heapq.heappush(frontier, node)
 
-    best_g = {state_to_tuple(START): 0}
-    explored_set = set()
+    frontier_dic = {node_tuple: 0}
+    reached = {}
+    generated = 1
 
-    while frontier and (len(explored_set) < MAX_STEPS):
-
+    while frontier and len(reached) < MAX_STEPS:
         node = heapq.heappop(frontier)
-        node_key = state_to_tuple(node.state)
-        g_node = best_g[node_key]
-
-        if node.get_cost() != (g_node + heuristic(node.state)):
-            continue
-
-        if node_key in explored_set:
+        node_tuple = state_to_tuple(node.state)
+        g_node = _g_cost(node)
+        if(node_tuple in reached ):
             continue
 
         if is_goal(node.state):
-            return solution(node, len(explored_set), len(explored_set) + len(frontier), start_time)
+            return solution(node, len(reached), generated, start_time)
 
-        explored_set.add(node_key)
+        reached[node_tuple] = g_node
 
         for action in get_actions(node.state):
-            child = node.expand(action,"f(x)")
+            child = node.expand(action, "f(x)")
             child_key = state_to_tuple(child.state)
+            g_new = _g_cost(child)
 
-            # g_child = g(n) + step_cost(n,action).
-            g_child = child.get_cost() - heuristic(child.state)
-            old_g = best_g.get(child_key, float("inf"))
-
-            if g_child >= old_g:
+            if child.is_cycle():
                 continue
 
-            if child_key in explored_set:
-                explored_set.remove(child_key)
+            if child_key in reached:
+                if g_new >= reached[child_key]:
+                    continue
+                reached.pop(child_key)
+                
 
-            best_g[child_key] = g_child
+            if child_key in frontier_dic:
+                if g_new >= frontier_dic[child_key]:
+                    continue
+
+            frontier_dic[child_key] = g_new
             heapq.heappush(frontier, child)
+            generated += 1
 
-    return solution(node, len(explored_set), len(explored_set) + len(frontier), start_time)
+    return solution(node, len(reached), generated, start_time)
