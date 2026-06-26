@@ -17,13 +17,13 @@ class Result:
 
 def solution(node, explored, generated, start_time):
      return Result(
-        success=is_goal(node.Get_State()),
-        path=node.Get_Path(),
-        states=node.Get_States(),
-        last_state=node.Get_State(),
+        success=is_goal(node.get_state()),
+        path=node.get_path(),
+        states=node.get_states(),
+        last_state=node.get_state(),
         cost=node.cost,
         explored=explored,
         generated=generated,
-        depth=node.Get_Depth(),
+        depth=node.get_depth(),
         runtime=time.time() - start_time,
     )
