@@ -121,8 +121,20 @@ class Node:
                     action=action,
                     cost=self.cost + step_cost(self.state, action)
                 )
-            case "h(x)": pass
-            case "f(x)": pass
+            case "h(x)": # Chi phí di chuyển dùng hàm heuristic
+                return Node(
+                    state=next_state,
+                    parent=self,
+                    action=action,
+                    cost=Heuristic(next_state)
+                )
+            case "f(x)": # Chi phí di chuyển dùng hàm f(x) = g(x) + h(x)
+                return Node(
+                    state=next_state,
+                    parent=self,
+                    action=action,
+                    cost=self.cost + Step_Cost(self.state, action) + Heuristic(next_state)-Heuristic(self.state)
+                )
     # eg: child = node.Expand(action)
 
 

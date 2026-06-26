@@ -13,7 +13,7 @@ def ida_star_search(initial_state, max_depth=80):
     expanded_nodes = 0
     generated_nodes = 1
 
-    def Dfs(node, limit):
+    def dfs(node, limit):
         nonlocal expanded_nodes, generated_nodes
 
         f = node.cost + heuristic(node.state)
@@ -31,9 +31,9 @@ def ida_star_search(initial_state, max_depth=80):
         next_limit = float("inf")
 
         for action in get_actions(node.state):
-            child = node.Expand(action)
+            child = node.expand(action)
             generated_nodes += 1
-            result, found_node = Dfs(child, limit)
+            result, found_node = dfs(child, limit)
 
             if result is FOUND:
                 return FOUND, found_node
@@ -43,7 +43,7 @@ def ida_star_search(initial_state, max_depth=80):
         return next_limit, None
 
     while bound < float("inf"):
-        result, found_node = Dfs(start, bound)
+        result, found_node = dfs(start, bound)
         if result is FOUND:
             return solution(found_node, expanded_nodes, generated_nodes, start_time)
         bound = result

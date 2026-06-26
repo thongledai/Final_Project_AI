@@ -3,7 +3,7 @@ from Core.Utils import START
 from algorithms.uninformed_search.breadth_first_search import *
 from algorithms.uninformed_search.depth_first_search import *
 
-from algorithms.informed_search.a_star_search import a_star_search
+from algorithms.informed_search.A_Star_Search import a_star_search
 
 
 if __name__ == "__main__":

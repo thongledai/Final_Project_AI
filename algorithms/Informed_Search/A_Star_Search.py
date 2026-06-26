@@ -1,7 +1,6 @@
 import heapq
 import time
-from Core.Action import get_actions, apply_action
-from Core.Cost import step_cost
+from Core.Action import get_actions
 from Core.Node import Node
 from Core.Result import solution
 from Core.Utils import is_goal, state_to_tuple, heuristic
@@ -70,12 +69,6 @@ def a_star_search(initial_state, max_expanded=100000):
             # Tạo Node con với cost là f(child), vì heapq so sánh theo Node.cost.
             f_child = g_child + heuristic(child_state)
             best_g[child_key] = g_child
-            child = Node(
-                state=child_state,
-                parent=node,
-                action=action,
-                cost=f_child
-            )
             heapq.heappush(frontier, child)
             generated_nodes += 1
 
