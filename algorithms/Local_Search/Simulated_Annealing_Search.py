@@ -1,9 +1,23 @@
 import math
 import random
 import time
+from Core.Action import Get_Actions, Apply_Action
 from Core.Node import Node
 from Core.Result import Solution
-from Core.Utils import Is_Goal, Child_Nodes, Heuristic
+from Core.Utils import Is_Goal, Heuristic
+
+
+def _Child_Nodes(node):
+    children = []
+    for action in Get_Actions(node.state):
+        child_state = Apply_Action(node.state, action)
+        children.append(Node(
+            state=child_state,
+            parent=node,
+            action=action,
+            cost=Heuristic(child_state)
+        ))
+    return children
 
 
 def Simulated_Annealing_Search(
@@ -15,7 +29,7 @@ def Simulated_Annealing_Search(
 ):
     rng = random.Random(seed)
     start_time = time.time()
-    current = Node(initial_state)
+    current = Node(initial_state, cost=Heuristic(initial_state))
     expanded_nodes = 0
     generated_nodes = 1
     temperature = start_temperature
@@ -24,7 +38,7 @@ def Simulated_Annealing_Search(
         if Is_Goal(current.state):
             return Solution(current, expanded_nodes, generated_nodes, start_time)
 
-        children = Child_Nodes(current)
+        children = _Child_Nodes(current)
         expanded_nodes += 1
         generated_nodes += len(children)
 
@@ -32,7 +46,7 @@ def Simulated_Annealing_Search(
             break
 
         next_state = rng.choice(children)
-        delta = Heuristic(next_state.state) - Heuristic(current.state)
+        delta = next_state.cost - current.cost
 
         if delta < 0:
             current = next_state

@@ -6,8 +6,7 @@ class Node:
         self.state = state   # List
         self.parent = parent # Node
         self.action = action # Tuple
-        self.cost = cost     # int
-
+        self.cost = cost     # int       
 
     # So sánh = theo trạng thái
     def __eq__(self, other):

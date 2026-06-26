@@ -1,13 +1,26 @@
 import time
+from Core.Action import Get_Actions, Apply_Action
 from Core.Node import Node
 from Core.Result import Solution
-from Core.Utils import Is_Goal, State_To_Tuple,Best_Child, Heuristic
+from Core.Utils import Is_Goal, Heuristic
+
+
+def _Child_Nodes(node):
+    children = []
+    for action in Get_Actions(node.state):
+        child_state = Apply_Action(node.state, action)
+        children.append(Node(
+            state=child_state,
+            parent=node,
+            action=action,
+            cost=Heuristic(child_state)
+        ))
+    return children
 
 
 def Steepest_Ascent_Hill_Climbing_Search(initial_state, max_steps=1000):
     start_time = time.time()
-    current = Node(initial_state)
-    seen = {State_To_Tuple(initial_state)}
+    current = Node(initial_state, cost=Heuristic(initial_state))
     expanded_nodes = 0
     generated_nodes = 1
 
@@ -15,20 +28,17 @@ def Steepest_Ascent_Hill_Climbing_Search(initial_state, max_steps=1000):
         if Is_Goal(current.state):
             return Solution(current, expanded_nodes, generated_nodes, start_time)
 
-        candidate, children = Best_Child(current)
+        children = _Child_Nodes(current)
+        candidate = min(children, key=lambda child: child.cost) if children else None
         expanded_nodes += 1
         generated_nodes += len(children)
 
         if candidate is None:
             break
 
-        if Heuristic(candidate.state) >= Heuristic(current.state):
+        if candidate.cost >= current.cost:
             break
 
-        key = State_To_Tuple(candidate.state)
-        if key in seen:
-            break
-        seen.add(key)
         current = candidate
 
     return Solution(current, expanded_nodes, generated_nodes, start_time)

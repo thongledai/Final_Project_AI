@@ -1,14 +1,28 @@
 import random
 import time
+from Core.Action import Get_Actions, Apply_Action
 from Core.Result import Solution
 from Core.Node import Node
-from Core.Utils import Is_Goal, Child_Nodes, Heuristic
+from Core.Utils import Is_Goal, Heuristic
+
+
+def _Child_Nodes(node):
+    children = []
+    for action in Get_Actions(node.state):
+        child_state = Apply_Action(node.state, action)
+        children.append(Node(
+            state=child_state,
+            parent=node,
+            action=action,
+            cost=Heuristic(child_state)
+        ))
+    return children
 
 
 def Stochastic_Hill_Climbing_Search(initial_state, max_steps=1000, seed=None):
     rng = random.Random(seed)
     start_time = time.time()
-    current = Node(initial_state)
+    current = Node(initial_state, cost=Heuristic(initial_state))
     expanded_nodes = 0
     generated_nodes = 1
 
@@ -16,13 +30,13 @@ def Stochastic_Hill_Climbing_Search(initial_state, max_steps=1000, seed=None):
         if Is_Goal(current.state):
             return Solution(current, expanded_nodes, generated_nodes, start_time)
 
-        children = Child_Nodes(current)
+        children = _Child_Nodes(current)
         expanded_nodes += 1
         generated_nodes += len(children)
         better_neighbors = [
             child
             for child in children
-            if Heuristic(child.state) < Heuristic(current.state)
+            if child.cost < current.cost
         ]
 
         if not better_neighbors:
