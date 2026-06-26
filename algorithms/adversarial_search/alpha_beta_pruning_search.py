@@ -4,7 +4,7 @@ from Core.Utils import *
 from Core.Result import *
 
 
-def Alpha_Beta_Pruning_Search(node, alpha, beta, maximizing_player):
+def alpha_beta_pruning_search(node, maximizing_player, alpha=-1, beta=1):
     actions = get_actions(node.state)
     if is_goal(node.state):
         if maximizing_player:  # toi luot may -> May thua
@@ -19,7 +19,7 @@ def Alpha_Beta_Pruning_Search(node, alpha, beta, maximizing_player):
         value = -1
         for action in actions:
             child = node.Expand(action)
-            value = max(value, Alpha_Beta_Pruning_Search(child, alpha, beta, False))
+            value = max(value, alpha_beta_pruning_search(child, False, alpha, beta))
             alpha = max(alpha, value)
             if beta <= alpha:
                 break
@@ -29,7 +29,7 @@ def Alpha_Beta_Pruning_Search(node, alpha, beta, maximizing_player):
         value = 1
         for action in actions:
             child = node.Expand(action)
-            value = min(value, Alpha_Beta_Pruning_Search(child, alpha, beta, True))
+            value = min(value, alpha_beta_pruning_search(child, True, alpha, beta))
             beta = min(beta, value)
             if beta <= alpha:
                 break

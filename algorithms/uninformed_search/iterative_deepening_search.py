@@ -6,19 +6,19 @@ from Core.Utils import *
 from Core.Result import *
 
 # Thuật toán tìm kiếm theo chiều sâu dần
-def IDS(START):
+def iterative_deepening_search(START):
     global start_time
     start_time= time.time()
     depth=0
     while True:
-        result = DLS(START, depth)
+        result = depth_limited_search(START, depth)
         if result != "cutoff":
             result.runtime = time.time() - start_time
             return result
         
 
 # Depth Limited Search
-def DLS(START, limit):
+def depth_limited_search(START, limit):
     node = Node(START)
     frontier = deque([node])
     explored = []

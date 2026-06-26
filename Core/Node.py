@@ -1,6 +1,7 @@
 from Core.Action import *
 from Core.Cost import *
 
+
 class Node:
     def __init__(self, state, parent=None, action=None, cost=0):
         self.state = state   # List
@@ -104,9 +105,9 @@ class Node:
 
     
     # Tạo node con từ node hiện tại và action
-    def expand(self, action, cost_function=None):
+    def expand(self, action, cost=None):
         next_state = apply_action(self.state, action)
-        match cost_function:
+        match cost:
             case None: # Chi phí di chuyển mặc định là 1
                 return Node(
                     state=next_state,
@@ -126,16 +127,15 @@ class Node:
                     state=next_state,
                     parent=self,
                     action=action,
-                    cost=Heuristic(next_state)
+                    cost=heuristic(next_state)
                 )
             case "f(x)": # Chi phí di chuyển dùng hàm f(x) = g(x) + h(x)
                 return Node(
                     state=next_state,
                     parent=self,
                     action=action,
-                    cost=self.cost + Step_Cost(self.state, action) + Heuristic(next_state)-Heuristic(self.state)
+                    cost=self.cost + step_cost(self.state, action) + heuristic(next_state) - heuristic(self.state)
                 )
-    # eg: child = node.Expand(action)
 
 
     # Kiểm tra có lặp lại trạng thái cũ không
@@ -146,4 +146,3 @@ class Node:
                 return True
             ancestor=ancestor.parent
         return False
-

@@ -1,8 +1,8 @@
 import time
-from Core.Action import get_actions
-from Core.Node import Node
-from Core.Result import solution
-from Core.Utils import is_goal,  heuristic
+from Core.Node import *
+from Core.Action import *
+from Core.Utils import *
+from Core.Result import *
 
 FOUND = object()
 
@@ -31,7 +31,7 @@ def ida_star_search(initial_state, max_depth=80):
         next_limit = float("inf")
 
         for action in get_actions(node.state):
-            child = node.expand(action)
+            child = node.expand(action, "g(x)")
             generated_nodes += 1
             result, found_node = dfs(child, limit)
 

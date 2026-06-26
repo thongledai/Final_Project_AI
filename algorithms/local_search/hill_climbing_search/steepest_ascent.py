@@ -1,20 +1,14 @@
 import time
-from Core.Action import get_actions, apply_action
-from Core.Node import Node
-from Core.Result import solution
-from Core.Utils import is_goal, heuristic
+from Core.Action import *
+from Core.Node import *
+from Core.Result import *
+from Core.Utils import *
 
 
 def _child_nodes(node):
     children = []
     for action in get_actions(node.state):
-        child_state = apply_action(node.state, action)
-        children.append(Node(
-            state=child_state,
-            parent=node,
-            action=action,
-            cost=heuristic(child_state)
-        ))
+        children.append(node.expand(action, cost_function="h(x)"))
     return children
 
 

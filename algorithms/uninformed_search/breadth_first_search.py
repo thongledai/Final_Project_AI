@@ -7,7 +7,7 @@ from Core.Result import *
 
 
 # Thuật toán tìm kiếm theo chiều rộng
-def BFS(START):
+def breadth_first_search(START):
     start_time=time.time()
     node=Node(START)
     if is_goal(node.state):

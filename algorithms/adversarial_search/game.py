@@ -1,12 +1,13 @@
 from Core.Node import *
 from Core.Utils import *
 from Core.Action import *
-from algorithms.adversarial_search.Minimax_Search import Minimax_Search
-from algorithms.adversarial_search.Alpha_Beta_Pruning_Search import Alpha_Beta_Pruning_Search
-from algorithms.adversarial_search.Expectimax_Search import Expectimax_Search
+from algorithms.adversarial_search.minimax_search import minimax_search
+from algorithms.adversarial_search.alpha_beta_pruning_search import alpha_beta_pruning_search
+from algorithms.adversarial_search.expectimax_search import expectimax_search
 
-
-def game(START, turn):  # True: May, False: Nguoi
+# turn: lượt đi: True: máy, False: người
+# algorithm: minimax_search, alpha_beta_pruning_search, expectimax_search
+def game(START, turn, algorithm):  
     node = Node(START)
     step = 0
 
@@ -37,9 +38,7 @@ def game(START, turn):  # True: May, False: Nguoi
 
             for action in actions:
                 child = node.expand(action)
-                # eval = Minimax_Search(child, False)
-                # eval = Alpha_Beta_Pruning_Search(child, -1, 1, False)
-                eval = Expectimax_Search(child, False)
+                eval = algorithm(child, False)
                 if eval > max_eval:
                     max_eval = eval
                     best_action = action

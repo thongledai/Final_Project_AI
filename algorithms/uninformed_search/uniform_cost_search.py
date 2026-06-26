@@ -7,7 +7,7 @@ from Core.Result import *
 
 
 # Thuật toán tìm kiếm chi phí đồng nhất
-def UCS(START):
+def uniform_cost_search(START):
     start_time=time.time()
     node=Node(START)
     if is_goal(node.state):
@@ -24,8 +24,8 @@ def UCS(START):
             return solution(node,len(explored), len(explored) + len(frontier), start_time)
         
         actions = get_actions(node.state)
-        for action1 in actions:
-            child = node.Expand(action=action1,cost_function="g(x)")
+        for action in actions:
+            child = node.expand(action,"g(x)")
             if child.state not in explored and child not in frontier:
                 heapq.heappush(frontier, child)
 

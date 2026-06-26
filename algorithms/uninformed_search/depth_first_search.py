@@ -7,7 +7,7 @@ from Core.Result import *
 
 
 # Thuật toán tìm kiếm theo chiều sâu
-def DFS(START):
+def depth_first_search(START):
     start_time=time.time()
     node=Node(START)
     if is_goal(node.state):
