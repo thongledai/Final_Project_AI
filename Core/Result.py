@@ -44,7 +44,7 @@ def solution(node, explored, generated, start_time):
         zipped_states = [list(step) for step in zip(*all_node_states)]
 
         return Result(
-            success=is_goal(node[0].get_state()),
+            success=all(is_goal(n.get_state()) for n in node),
             path=node[0].get_path(),
             states= zipped_states,
             last_state=node[0].get_state(),

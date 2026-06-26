@@ -76,8 +76,7 @@ BeliefStateSearch.py
 5.ConstraintSatisfactionProblems:
 BacktrackingSearch.py
 ForwardCheckingSearch.py
-AC3Search.py
-MinConflictSearch.py
+
 
 6.AdversarialSearch:
 MinimaxSearch.py

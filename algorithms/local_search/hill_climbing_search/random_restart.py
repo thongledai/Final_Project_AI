@@ -29,6 +29,7 @@ def _hill_climb(START):
     current = START
     explored = 0
     generated = 0
+    visited = {state_to_tuple(current.state)}
 
     for _ in range(MAX_STEPS):
         if is_goal(current.state):
@@ -39,12 +40,14 @@ def _hill_climb(START):
         generated += len(children)
 
         better_neighbors = [child for child in children
-                            if child.cost < current.cost]
+                            if child.cost <= current.cost
+                            and state_to_tuple(child.state) not in visited]
 
         if not better_neighbors:
             break
 
         current = random.choice(better_neighbors)
+        visited.add(state_to_tuple(current.state))
 
     return current, explored, generated
 

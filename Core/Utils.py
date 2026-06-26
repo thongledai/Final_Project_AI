@@ -9,10 +9,10 @@ MAX_STEPS = 1000
 
 
 
-START = [[3, 3, 2, 2],      # lọ 0
-         [2, 1, 3   ],      # lọ 1
-         [3, 2      ],      # lọ 2
-         [1, 1,1    ]]      # lọ 3
+START = [[1, 3, 2, 2],      # lọ 0
+         [3, 2, 1, 3],      # lọ 1
+         [1, 3, 2, 1],      # lọ 2
+         [          ]]      # lọ 3
 
 # Trạng thái ban đầu random
 nums = [1]*4 + [2]*4 + [3]*4
@@ -27,9 +27,6 @@ START_RANDOM = [
 # Sao chép trạng thái
 def copy_state(state):
     return [row[:] for row in state]
-
-
-
 
 
 # Lấy vị trí của phần tử trên cùng của lọ i

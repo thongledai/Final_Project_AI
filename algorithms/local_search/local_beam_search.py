@@ -11,16 +11,21 @@ def local_beam_search(initial_state, beam_width=3, max_steps=1000):
     current_set = [Node(initial_state, cost=heuristic(initial_state))]
     expanded_nodes = 0
     generated_nodes = 1
+    visited = {state_to_tuple(initial_state)}
 
     for _ in range(max_steps):
         neighbor_states = []
 
         for state in current_set:
             children = child_nodes(state)
-            neighbor_states.extend(children)
-
+            
             expanded_nodes += 1
             generated_nodes += len(children)
+            
+            for child in children:
+                if state_to_tuple(child.state) not in visited:
+                    neighbor_states.append(child)
+                    visited.add(state_to_tuple(child.state))
 
         for neighbor in neighbor_states:
             if is_goal(neighbor.state):
