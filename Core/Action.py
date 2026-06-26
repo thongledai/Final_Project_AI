@@ -1,5 +1,8 @@
+from Core.Action import *
+from Core.Result import *
+from Core.Cost import *
+from Core.Node import *
 from Core.Utils import *
-
 
 # Kiểm tra xem có thể đổ nước từ lọ i1 sang lọ i2 không
 def check_action(state,i1, i2):
