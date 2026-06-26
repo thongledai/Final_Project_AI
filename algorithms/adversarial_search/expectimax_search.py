@@ -12,13 +12,13 @@ def expectimax_search(node, maximizing_player):
         else:  # toi luot nguoi -> May thang
             return 1
 
-    elif len(actions) == 0 or node.Is_Cycle():  # Hoa
+    elif len(actions) == 0 or node.is_cycle():  # Hoa
         return 0
 
     if maximizing_player:  # True: May di
         max_eval = -1
         for action in actions:
-            child = node.Expand(action)
+            child = node.expand(action)
             eval = expectimax_search(child, False)
             max_eval = max(max_eval, eval)
         return max_eval
@@ -26,7 +26,7 @@ def expectimax_search(node, maximizing_player):
     else:  # False: Nguoi di
         chance_eval = 0
         for action in actions:
-            child = node.Expand(action)
+            child = node.expand(action)
             eval = expectimax_search(child, True)
             chance_eval += eval
         return chance_eval / len(actions)
