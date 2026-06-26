@@ -22,7 +22,7 @@ def and_or_graph_search(start):
         
         actions = get_actions(node.state)
         for action in actions:
-            child = node.Expand(action)
+            child = node.expand(action)
             stats['generated_node'] += 1
             
             # --- MÔ PHỎNG NÚT AND ---

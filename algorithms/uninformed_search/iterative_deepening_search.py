@@ -15,6 +15,7 @@ def iterative_deepening_search(START):
         if result != "cutoff":
             result.runtime = time.time() - start_time
             return result
+        depth+=1
         
 
 # Depth Limited Search

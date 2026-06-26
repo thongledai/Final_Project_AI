@@ -7,7 +7,7 @@ from Core.Utils import *
 def _child_nodes(node):
     children = []
     for action in get_actions(node.state):
-        children.append(node.Expand(action, cost_function="h(x)"))
+        children.append(node.expand(action, "h(x)"))
     return children
 
 

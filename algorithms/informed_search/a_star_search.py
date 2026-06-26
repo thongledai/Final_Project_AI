@@ -39,7 +39,7 @@ def a_star_search(initial_state, max_expanded=100000):
         expanded_nodes += 1
 
         for action in get_actions(node.state):
-            child = node.expand(action, cost="f(x)")
+            child = node.expand(action,"f(x)")
             child_key = state_to_tuple(child.state)
 
             # g_child = g(n) + cost(action).

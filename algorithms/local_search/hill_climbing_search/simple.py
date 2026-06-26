@@ -20,7 +20,7 @@ def simple_hill_climbing(initial_state, max_steps=1000):
         next_node = None
 
         for action in get_actions(current.state):
-            child = current.expand(action, cost="h(x)")           
+            child = current.expand(action,"h(x)")           
             generated_nodes += 1
 
             if child.cost < current_value:
