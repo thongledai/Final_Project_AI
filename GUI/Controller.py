@@ -404,19 +404,15 @@ class Controller:
 
     def _do_machine_move(self):
         gc = self.game_controller
-        if gc.status != "playing" or gc.turn != "human": # máy
+        if gc.status == "playing" and gc.turn == "machine":
             state_before = copy_state(gc.state)
             
             # Gán lại thuật toán mới nhất
             if self.model.algorithm_func:
                 gc.algo = self.model.algorithm_func
 
-            gc.machine_move()
-            
+            action = gc.machine_move()
             state_after = copy_state(gc.state)
-            action = None
-            if gc.history:
-                action = gc.history[-1]
 
             if action:
                 alg_result = getattr(gc, 'last_result', None)

@@ -43,5 +43,3 @@ def local_beam_search(initial_state, beam_width=3, max_steps=1000):
         default=Node(initial_state, cost=heuristic(initial_state)),
     )
     return solution(current, expanded_nodes, generated_nodes, start_time)
-
-

@@ -20,6 +20,7 @@ class Result:
 def solution(node, explored, generated, start_time):
     if node is None:
         return Result(
+            success=False,
             explored=explored,
             generated=generated,
             runtime=time.time() - start_time,

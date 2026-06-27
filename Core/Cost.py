@@ -15,11 +15,12 @@ def step_cost(state, action):
 def heuristic(state):
     score = 0
     for tube in state:
-        if not tube or (len(tube) == CAPACITY and len(set(tube)) == 1): # không tính lọ rỗng hoặc lọ đã hoàn thành
+        if len(tube) == CAPACITY and len(set(tube)) == 1: # không tính lọ đã hoàn thành
             continue
 
         score += CAPACITY - len(tube) # số ô còn trống
-        score += sum(1 for i in range(1, len(tube)) # số lần 2 màu cạnh nhau khác nhau
-                    if tube[i] != tube[i - 1])
+        if tube:
+            score += sum(1 for i in range(1, len(tube)) # số lần 2 màu cạnh nhau khác nhau
+                        if tube[i] != tube[i - 1])
 
     return score

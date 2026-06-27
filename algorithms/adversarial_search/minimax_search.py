@@ -5,7 +5,9 @@ from Core.Result import *
 import time
 
 
-def minimax_search(node, maximizing_player):
+def minimax_search(node, maximizing_player=True):
+    if isinstance(node, list):
+        node = Node(node)
     explored = 0
     generated = 1
     start_time = time.time()

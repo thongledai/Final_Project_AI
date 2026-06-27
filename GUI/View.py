@@ -1046,7 +1046,6 @@ class View(QMainWindow):
         lay = QGridLayout(self.bottom_frame)
         lay.setContentsMargins(20, 8, 20, 8)
         lay.setHorizontalSpacing(28)
-        lay.setRowStretch(2, 1)
 
         self.lbl_path = QLabel(f"<b style='color:{ACCENT_COLOR}'>Path:</b> ")
         self.lbl_path.setWordWrap(True)
@@ -1063,6 +1062,7 @@ class View(QMainWindow):
             self.lbl_success, self.lbl_cost, self.lbl_explored,
             self.lbl_generated, self.lbl_depth, self.lbl_runtime
         ]):
+            lbl.setFixedHeight(28)
             lay.addWidget(lbl, 1, col)
 
         self.main_layout.addWidget(self.bottom_frame)
@@ -1117,6 +1117,7 @@ class View(QMainWindow):
         self.puzzle_view.start_animation(state_before, state_after, action, on_done)
 
     def show_adversarial_ui(self):
+        self.bottom_frame.setMinimumHeight(45)
         self.lbl_turn.show()
         self.combo_turn.show()
         self.btn_execute.hide()
@@ -1133,6 +1134,7 @@ class View(QMainWindow):
         self.lbl_cost.setText(   f"<b style='color:{ac}'>Result:</b> ")
 
     def hide_adversarial_ui(self):
+        self.bottom_frame.setMinimumHeight(75)
         self.lbl_turn.hide()
         self.combo_turn.hide()
         self.btn_execute.show()

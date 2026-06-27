@@ -24,6 +24,9 @@ def ida_star_search(START):
         if is_goal(node.state):
             return FOUND, node
 
+        if node.is_cycle():
+            return float("inf"), None
+
         if node.get_depth() >= MAX_STEPS:
             return float("inf"), None
 

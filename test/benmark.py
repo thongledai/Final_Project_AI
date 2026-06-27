@@ -159,6 +159,9 @@ def run_tests(input_file: str, output_file: str, timeout: float, verbose: bool):
             result, error = run_with_timeout(func, state, timeout)
             elapsed = time.perf_counter() - t0
 
+            if isinstance(result, tuple):
+                result = result[1]
+
             # Bổ sung runtime nếu thuật toán chưa ghi
             if result is not None and getattr(result, "runtime", 0) == 0:
                 result.runtime = elapsed
