@@ -1059,8 +1059,12 @@ class View(QMainWindow):
         self.lbl_runtime   = QLabel("Runtime:")
 
         for col, lbl in enumerate([
-            self.lbl_success, self.lbl_cost, self.lbl_explored,
-            self.lbl_generated, self.lbl_depth, self.lbl_runtime
+            self.lbl_success,
+            self.lbl_runtime,   
+            self.lbl_cost,
+            self.lbl_explored,
+            self.lbl_generated,
+            self.lbl_depth      
         ]):
             lbl.setFixedHeight(28)
             lay.addWidget(lbl, 1, col)

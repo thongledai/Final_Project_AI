@@ -68,10 +68,8 @@ SimulatedAnnealingSearch.py
 
 4.SearchingInComplexEnvironments:
 AndOrGraphSearch.py
-UnobservableSearch:
-BeliefStateSearch.py
-PartiallyObservableSearch:
-BeliefStateSearch.py
+PartiallyObservableSearch: BeliefStateSearch
+
 
 5.ConstraintSatisfactionProblems:
 BacktrackingSearch.py
