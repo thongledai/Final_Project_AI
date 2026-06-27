@@ -1,647 +1,1182 @@
 import sys
+import math
+
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QComboBox, QPushButton, QFrame, QScrollArea, QGridLayout,
     QGraphicsDropShadowEffect
 )
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QPainter, QColor, QPen, QBrush, QFont, QPainterPath
+from PyQt6.QtCore import Qt, QTimer, QRect
+from PyQt6.QtGui import (
+    QPainter, QColor, QPen, QBrush, QFont,
+    QPainterPath, QLinearGradient, QRadialGradient
+)
 
 from Core.Utils import CAPACITY
 
-# ── MÔ PHỎNG MÀU SẮC ──
+# ═══════════════════════════ COLORS ═══════════════════════════════
 COLOR_MAP = {
-    1: QColor("#FF2A2A"),   # Đỏ
-    2: QColor("#FFCC00"),   # Vàng
-    3: QColor("#00CCFF"),   # Xanh dương
+    1: QColor("#FF2D55"),   # Bright Neon Red/Pink
+    2: QColor("#FFCC00"),   # Sunny Golden Yellow
+    3: QColor("#00C2FF"),   # Vivid Sky Blue
+    4: QColor("#4CD964"),   # Vibrant Green
+    5: QColor("#AF52DE"),   # Electric Purple
+    6: QColor("#FF9500"),   # High-saturation Orange
+    7: QColor("#FF4F00"),   # Intense Coral
+}
+COLOR_LIGHT = {
+    1: QColor("#FF6B8B"),
+    2: QColor("#FFE066"),
+    3: QColor("#66DAFF"),
+    4: QColor("#86F099"),
+    5: QColor("#D08DFF"),
+    6: QColor("#FFBE66"),
+    7: QColor("#FF8566"),
+}
+COLOR_DARK = {
+    1: QColor("#D81B60"),
+    2: QColor("#F57F17"),
+    3: QColor("#0077C2"),
+    4: QColor("#00A935"),
+    5: QColor("#7B1FA2"),
+    6: QColor("#E65100"),
+    7: QColor("#D84315"),
 }
 
-BG_COLOR = "#f4f4f4"
-PANEL_BG = "#ffffff"
-TUBE_OUTLINE = QColor("#aaaaaa")
-
-# Kích thước lọ
-TUBE_WIDTH = 60
-CELL_HEIGHT = 55
-TUBE_HEIGHT = 220
-TUBE_GAP = 30
-TUBE_CORNER = 15
-
-# Tốc độ Animation
-ANIM_DURATION = 300 # ms
-ANIM_FPS = 60
+BG_COLOR        = "#000000"  # Vibrant deep violet (much brighter and closer to the reference image)
+PANEL_BG        = "#000000"  # Brighter warm purple panel
+ACCENT_COLOR    = "#00F0FF"  # Brilliant electric cyan
 
 
+# ═══════════════════════ TUBE GEOMETRY ════════════════════════════
+TUBE_WIDTH   = 62
+CELL_HEIGHT  = 52
+TUBE_HEIGHT  = CAPACITY * CELL_HEIGHT   # 208 px
+TUBE_GAP     = 48
+TUBE_BR      = TUBE_WIDTH // 2          # Full semicircle bottom
+
+# ══════════════════════════ ANIMATION ═════════════════════════════
+ANIM_DURATION  = 900    # ms  (total pour transition)
+ANIM_FPS       = 60
+
+WAVE_SPEED     = 2.6    # radians / second
+WAVE_IDLE_AMP  = 2.2    # px  – gentle idle ripple
+WAVE_POUR_AMP  = 14.0   # px  – active sloshing
+WAVE_DECAY     = 0.055  # smoothing coefficient per frame
+
+LIFT_HEIGHT    = 160    # px  – how high src tube lifts (way above others)
+MAX_TILT       = 75     # deg – steep tilt like in reference image
+
+
+# ═══════════════════════════════════════════════════════════════════
 class PuzzleView(QWidget):
-    # Custom QWidget dùng QPainter để vẽ các lọ nước 
+    """
+    Custom widget that renders Water Sort Puzzle tubes.
+    Features:
+      • U-shaped (test-tube) glass appearance
+      • Continuous water-wave animation on liquid surfaces
+      • Animated pour-stream arc between tubes
+    """
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.state_data = [] # Lưu state (list of tubes) hoặc multi-state
+
+        # ── Display state ─────────────────────────────────────────
+        self.state_data     = []
         self.is_multi_state = False
-        
-        self.tube_w = TUBE_WIDTH
-        self.cell_h = CELL_HEIGHT
-        self.tube_h = TUBE_HEIGHT
-        self.tube_gap = TUBE_GAP
-        self.tube_corner = TUBE_CORNER
-        
-        # Animation data
-        self.is_animating = False
-        self.anim_progress = 0.0
-        self.anim_action = None
-        self.anim_state_before = None
-        self.anim_state_after = None
+        self.highlight_tube = None
+
+        # ── Click interaction ─────────────────────────────────────
+        self.tube_rects     = []
+        self.click_callback = None
+
+        # ── Pour animation ────────────────────────────────────────
+        self.is_animating          = False
+        self.anim_progress         = 0.0
+        self.anim_action           = None
+        self.anim_state_before     = None
+        self.anim_state_after      = None
+        self.on_anim_done_callback = None
+
         self.anim_timer = QTimer(self)
         self.anim_timer.timeout.connect(self._anim_step)
-        
-        self.on_anim_done_callback = None
-        
-        # Lưu các rect của lọ để hỗ trợ click (cho adversarial)
-        self.tube_rects = []
-        self.highlight_tube = None
-        self.click_callback = None
-        
-        self.setMinimumSize(800, 400)
-        
+
+        # ── Wave animation (always running) ───────────────────────
+        self.wave_phase      = 0.0
+        self.wave_amplitude  = WAVE_IDLE_AMP
+        self.wave_target_amp = WAVE_IDLE_AMP
+
+        self.wave_timer = QTimer(self)
+        self.wave_timer.timeout.connect(self._wave_step)
+        self.wave_timer.start(1000 // ANIM_FPS)
+
+        # ── Tube dimensions (may shrink in multi-state mode) ──────
+        self._use_normal_dims()
+
+        self.setMinimumSize(800, 450)
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.setStyleSheet(f"background-color: {BG_COLOR};")
+
+    # ─────────────────────── Dimensions ───────────────────────────
+
+    def _use_normal_dims(self):
+        self.tube_w  = TUBE_WIDTH
+        self.cell_h  = CELL_HEIGHT
+        self.tube_h  = TUBE_HEIGHT
+        self.tube_gap = TUBE_GAP
+        self.tube_br = TUBE_BR
+
+    def _use_small_dims(self):
+        self.tube_w  = 40
+        self.cell_h  = 33
+        self.tube_h  = CAPACITY * 33
+        self.tube_gap = 26
+        self.tube_br = 20
+
     def update_dimensions(self):
         if self.is_multi_state:
-            self.tube_w = 40
-            self.cell_h = 35
-            self.tube_h = 140
-            self.tube_gap = 20
-            self.tube_corner = 10
+            self._use_small_dims()
         else:
-            self.tube_w = TUBE_WIDTH
-            self.cell_h = CELL_HEIGHT
-            self.tube_h = TUBE_HEIGHT
-            self.tube_gap = TUBE_GAP
-            self.tube_corner = TUBE_CORNER
-
-    def set_state(self, state_data, highlight=None):
-        self.state_data = state_data
-        self.highlight_tube = highlight
-        self.is_multi_state = False
-        
-        if state_data and isinstance(state_data, list) and len(state_data) > 0:
-            if isinstance(state_data[0], list) and len(state_data[0]) > 0 and isinstance(state_data[0][0], list):
-                self.is_multi_state = True
-        self.state_data = state_data
-        self.update_dimensions()
-        self._update_min_size()
-        self.update() # Gọi paintEvent
+            self._use_normal_dims()
 
     def _update_min_size(self):
         if not self.state_data:
             return
-            
-        # Tính kích thước tối thiểu cần thiết để QScrollArea hoạt động
         if self.is_multi_state:
-            num_states = len(self.state_data)
-            max_tubes = max(len(s) for s in self.state_data) if num_states > 0 else 0
-            w = max_tubes * self.tube_w + (max_tubes + 1) * self.tube_gap
-            h = num_states * (self.tube_h + 100)
+            n  = len(self.state_data)
+            mt = max((len(s) for s in self.state_data), default=0)
+            w  = mt * self.tube_w + (mt + 1) * self.tube_gap
+            h  = n * (self.tube_h + 120)
         else:
-            num_tubes = len(self.state_data)
-            w = num_tubes * self.tube_w + (num_tubes + 1) * self.tube_gap
-            h = self.tube_h + 100
-            
-        self.setMinimumSize(max(800, w), max(400, h))
+            n = len(self.state_data)
+            w = n * self.tube_w + (n + 1) * self.tube_gap
+            h = self.tube_h + 120
+        self.setMinimumSize(max(800, w), max(450, h))
+
+    # ─────────────────────── State ────────────────────────────────
+
+    def set_state(self, state_data, highlight=None):
+        self.state_data     = state_data
+        self.highlight_tube = highlight
+        self.is_multi_state = self._is_multi(state_data)
+        self.update_dimensions()
+        self._update_min_size()
+
+    @staticmethod
+    def _is_multi(data):
+        return (data and isinstance(data, list) and len(data) > 0
+                and isinstance(data[0], list) and len(data[0]) > 0
+                and isinstance(data[0][0], list))
+
+    # ─────────────────────── Wave ─────────────────────────────────
+
+    def _wave_step(self):
+        self.wave_phase = (self.wave_phase + WAVE_SPEED / ANIM_FPS) % (math.pi * 200)
+        diff = self.wave_target_amp - self.wave_amplitude
+        self.wave_amplitude += diff * WAVE_DECAY
+        self.update()
+
+    def _set_wave_active(self):
+        self.wave_target_amp = WAVE_POUR_AMP
+        self.wave_amplitude  = max(self.wave_amplitude, WAVE_POUR_AMP * 0.65)
+
+    def _set_wave_idle(self):
+        self.wave_target_amp = WAVE_IDLE_AMP
+
+    # ─────────────────────── Pour animation ───────────────────────
 
     def start_animation(self, state_before, state_after, action, on_done):
         if action is None:
             on_done()
             return
-            
-        self.anim_state_before = state_before
-        self.anim_state_after = state_after
-        self.anim_action = action
+
+        self.anim_state_before     = state_before
+        self.anim_state_after      = state_after
+        self.anim_action           = action
         self.on_anim_done_callback = on_done
-        
-        self.is_animating = True
-        self.is_multi_state = False
-        
-        if state_before and isinstance(state_before, list) and len(state_before) > 0:
-            if isinstance(state_before[0], list) and len(state_before[0]) > 0 and isinstance(state_before[0][0], list):
-                self.is_multi_state = True
-                
+        self.is_animating          = True
+        self.is_multi_state        = self._is_multi(state_before)
         self.update_dimensions()
-        
         self.anim_progress = 0.0
-        
         self._update_min_size()
-        
+        self._set_wave_active()
         self.anim_timer.start(1000 // ANIM_FPS)
 
     def _anim_step(self):
-        self.anim_progress += (1000 / ANIM_FPS) / ANIM_DURATION
+        self.anim_progress += (1000.0 / ANIM_FPS) / ANIM_DURATION
         if self.anim_progress >= 1.0:
             self.anim_timer.stop()
             self.is_animating = False
-            self.state_data = self.anim_state_after
-            self.update()
+            self.state_data   = self.anim_state_after
+            self._set_wave_idle()
             if self.on_anim_done_callback:
                 self.on_anim_done_callback()
-        else:
-            self.update()
+
+    # ─────────────────────── Mouse ────────────────────────────────
 
     def mousePressEvent(self, event):
         if self.click_callback:
-            # Tìm lọ nào được click
             for (rect, idx) in self.tube_rects:
                 if rect.contains(event.pos()):
                     self.click_callback(idx)
                     return
 
+    # ═══════════════════════ PAINT ════════════════════════════════
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
         self.tube_rects.clear()
-        
+
         if self.is_animating:
-            self._draw_animation(painter)
+            self._paint_animation(painter)
             return
 
         if not self.state_data:
             return
 
-        cw = self.width()
-        
-        if self.is_multi_state:
-            num_states = len(self.state_data)
-            section_h = max(TUBE_HEIGHT + 100, self.height() // num_states if num_states > 0 else 0)
-            
-            for idx, state in enumerate(self.state_data):
-                y_start = idx * section_h
-                y_end = y_start + section_h
-                
-                # Draw label
-                painter.setPen(QColor("#333333"))
-                painter.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
-                text_rect = painter.boundingRect(0, y_start + 10, cw, 30, Qt.AlignmentFlag.AlignHCenter, f"Belief State {idx + 1}")
-                painter.drawText(text_rect, Qt.AlignmentFlag.AlignHCenter, f"Belief State {idx + 1}")
-                
-                self._draw_tubes(painter, state, cw, y_start + 40, y_end, highlight_tube=None)
-                
-                # Line separator
-                if idx < num_states - 1:
-                    pen = QPen(QColor("#cccccc"), 2, Qt.PenStyle.DashLine)
-                    painter.setPen(pen)
-                    painter.drawLine(50, y_end, cw - 50, y_end)
-        else:
-            self._draw_tubes(painter, self.state_data, cw, 0, self.height(), self.highlight_tube)
+        cw, ch = self.width(), self.height()
 
-    def _draw_tubes(self, painter, state, cw, y_start, y_end, highlight_tube=None):
-        num_tubes = len(state)
-        total_w = num_tubes * self.tube_w + (num_tubes - 1) * self.tube_gap
-        start_x = (cw - total_w) // 2
-        
-        tube_y = y_start + (y_end - y_start - self.tube_h) // 2
-        
+        if self.is_multi_state:
+            n  = len(self.state_data)
+            sh = max(self.tube_h + 120, ch // n if n > 0 else ch)
+            for i, st in enumerate(self.state_data):
+                ys, ye = i * sh, (i + 1) * sh
+                painter.setPen(QColor("#9999cc"))
+                painter.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+                painter.drawText(0, ys + 10, cw, 30,
+                                 Qt.AlignmentFlag.AlignHCenter,
+                                 f"Belief State {i + 1}")
+                self._draw_tubes(painter, st, cw, ys + 40, ye, None)
+                if i < n - 1:
+                    painter.setPen(QPen(QColor("#2a2a5a"), 1, Qt.PenStyle.DashLine))
+                    painter.drawLine(50, ye, cw - 50, ye)
+        else:
+            self._draw_tubes(painter, self.state_data, cw, 0, ch, self.highlight_tube)
+
+    # ─────────────────────── Tubes layout ─────────────────────────
+
+    def _draw_tubes(self, painter, state, cw, ys, ye, highlight):
+        n       = len(state)
+        total_w = n * self.tube_w + (n - 1) * self.tube_gap
+        x0      = (cw - total_w) // 2
+        ty      = ys + ((ye - ys) - self.tube_h) // 2
+
         for i, tube in enumerate(state):
-            x = start_x + i * (self.tube_w + self.tube_gap)
-            self._draw_single_tube(painter, x, tube_y, tube, i == highlight_tube)
-            
-            # Label
-            painter.setPen(QColor("#333333"))
-            painter.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
-            painter.drawText(int(x), int(tube_y + self.tube_h + 10), int(self.tube_w), 30, Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop, f"Lọ {i}")
-            
-            from PyQt6.QtCore import QRect
-            self.tube_rects.append((QRect(int(x), int(tube_y), int(self.tube_w), int(self.tube_h)), i))
+            x = x0 + i * (self.tube_w + self.tube_gap)
+            self._draw_tube(painter, x, ty, tube, i == highlight, i)
 
-    def _draw_single_tube(self, painter, x, y, tube, is_highlight):
-        r = self.tube_corner
-        w = self.tube_w
-        h = self.tube_h
-        
-        # Vẽ nền trắng của lọ
-        path = QPainterPath()
-        path.moveTo(x, y)
-        path.lineTo(x, y + h - r)
-        path.arcTo(x, y + h - 2*r, 2*r, 2*r, 180, 90)
-        path.arcTo(x + w - 2*r, y + h - 2*r, 2*r, 2*r, 270, 90)
-        path.lineTo(x + w, y)
-        path.closeSubpath()
-        
-        painter.setBrush(QBrush(QColor("#ffffff")))
+            painter.setPen(QColor("#666699"))
+            painter.setFont(QFont("Segoe UI", 9))
+            painter.drawText(
+                int(x), int(ty + self.tube_h + 10),
+                int(self.tube_w), 22,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
+                f"Lọ {i}"
+            )
+            self.tube_rects.append(
+                (QRect(int(x), int(ty), int(self.tube_w), int(self.tube_h)), i)
+            )
+
+    # ─────────────────────── Single tube ──────────────────────────
+
+    def _tube_path(self, x, y):
+        """U-shaped (test tube) clip path — open top, convex rounded bottom."""
+        w, h, br = self.tube_w, self.tube_h, self.tube_br
+        p = QPainterPath()
+        p.moveTo(x, y)
+        p.lineTo(x, y + h - br)
+        # +180 (counter-clockwise in Qt) → passes through BOTTOM of ellipse
+        # giving a convex U-shape. -180 would go through TOP (concave).
+        p.arcTo(x, y + h - 2 * br, w, 2 * br, 180, 180)
+        p.lineTo(x + w, y)
+        return p
+
+    def _draw_tube(self, painter, x, y, tube, is_highlight, tube_idx=0):
+        w  = self.tube_w
+        h  = self.tube_h
+        tp = self._tube_path(x, y)
+
+        painter.save()
+        painter.setClipPath(tp)
+
+        # 1. Dark glass interior
+        bg = QLinearGradient(x, y, x + w, y)
+        bg.setColorAt(0.0, QColor(4,  4,  18, 200))
+        bg.setColorAt(0.5, QColor(12, 12, 35, 130))
+        bg.setColorAt(1.0, QColor(4,  4,  18, 200))
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawPath(path)
-        
-        # Vẽ nước
-        for slot in range(CAPACITY):
-            if slot >= len(tube):
+        painter.setBrush(QBrush(bg))
+        painter.drawPath(tp)
+
+        # 2. Color blocks
+        for slot in range(len(tube)):
+            cv    = tube[slot]
+            y_bot = y + h - slot * self.cell_h
+            y_top = y_bot - self.cell_h
+
+            if cv == -1:
+                # Hidden color (partial-observable)
+                painter.setBrush(QBrush(QColor(60, 60, 110, 100)))
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawRect(int(x + 1), int(y_top), int(w - 2), int(self.cell_h))
                 continue
-                
-            color = COLOR_MAP.get(tube[slot], QColor("#ffffff"))
-            cell_bot = y + h - slot * self.cell_h
-            cell_top = cell_bot - self.cell_h
-            
-            painter.setBrush(QBrush(color))
-            
-            if slot == 0:
-                water_path = QPainterPath()
-                water_path.moveTo(x + 2, cell_top)
-                water_path.lineTo(x + 2, cell_bot - r)
-                water_path.arcTo(x + 2, cell_bot - 2*r + 2, 2*r - 4, 2*r - 4, 180, 90)
-                water_path.arcTo(x + w - 2*r + 2, cell_bot - 2*r + 2, 2*r - 4, 2*r - 4, 270, 90)
-                water_path.lineTo(x + w - 2, cell_top)
-                water_path.closeSubpath()
-                painter.drawPath(water_path)
+
+            is_top = (slot == len(tube) - 1)
+            if is_top:
+                # Top slot drawn flat as requested
+                self._draw_slot_solid(painter, x, y_top, y_bot, cv)
             else:
-                painter.drawRect(int(x + 2), int(cell_top), int(w - 4), int(self.cell_h))
-                
-            # Line phân cách mờ hoặc hiệu ứng 3D
-            painter.setPen(QPen(QColor(255, 255, 255, 100), 1))
-            painter.drawLine(int(x + 2), int(cell_top), int(x + w - 2), int(cell_top))
-            painter.setPen(Qt.PenStyle.NoPen)
+                self._draw_slot_solid(painter, x, y_top, y_bot, cv)
 
-        # Vẽ viền
-        outline_color = QColor("#FF6B00") if is_highlight else TUBE_OUTLINE
-        pen = QPen(outline_color, 3)
-        pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
-        painter.setPen(pen)
-        painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.drawPath(path)
-        
-        # Đường thẳng đóng miệng lọ
-        painter.drawLine(int(x), int(y), int(x + w), int(y))
+            # Separator between different colors
+            if slot > 0 and tube[slot] != tube[slot - 1]:
+                painter.setPen(QPen(QColor(0, 0, 0, 55), 1))
+                painter.drawLine(int(x + 2), int(y_bot), int(x + w - 2), int(y_bot))
+                painter.setPen(Qt.PenStyle.NoPen)
 
-    def _draw_animation(self, painter):
-        if self.is_multi_state:
-            num_states = len(self.anim_state_before)
-            section_h = self.height() // num_states if num_states > 0 else 0
-            cw = self.width()
-            for idx in range(num_states):
-                y_start = idx * section_h
-                y_end = y_start + section_h
-                
-                # Draw label exactly like in paintEvent
-                painter.setPen(QColor("#333333"))
-                painter.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
-                text_rect = painter.boundingRect(0, y_start + 10, cw, 30, Qt.AlignmentFlag.AlignHCenter, f"Belief State {idx + 1}")
-                painter.drawText(text_rect, Qt.AlignmentFlag.AlignHCenter, f"Belief State {idx + 1}")
+        # 3. Left glass highlight
+        lh = QLinearGradient(x, y, x + w * 0.40, y)
+        lh.setColorAt(0.0, QColor(255, 255, 255, 70))
+        lh.setColorAt(0.5, QColor(255, 255, 255, 20))
+        lh.setColorAt(1.0, QColor(255, 255, 255, 0))
+        painter.setBrush(QBrush(lh))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawPath(tp)
 
-                state_before_idx = self.anim_state_before[idx]
-                state_after_idx = self.anim_state_after[idx]
-                self._draw_animation_single_state(painter, state_before_idx, state_after_idx, y_start + 40, y_end)
-                
-                if idx < num_states - 1:
-                    pen = QPen(QColor("#cccccc"), 2, Qt.PenStyle.DashLine)
-                    painter.setPen(pen)
-                    painter.drawLine(50, y_end, cw - 50, y_end)
+        # 4. Right edge shimmer
+        rh = QLinearGradient(x + w * 0.70, y, x + w, y)
+        rh.setColorAt(0.0, QColor(255, 255, 255, 0))
+        rh.setColorAt(1.0, QColor(255, 255, 255, 25))
+        painter.setBrush(QBrush(rh))
+        painter.drawPath(tp)
+
+        # 5. Bottom glow (reflects light through glass bottom)
+        bg_glow = QRadialGradient(x + w / 2, y + h - self.tube_br * 0.6, self.tube_br)
+        bg_glow.setColorAt(0.0, QColor(255, 255, 255, 18))
+        bg_glow.setColorAt(1.0, QColor(255, 255, 255, 0))
+        painter.setBrush(QBrush(bg_glow))
+        painter.drawPath(tp)
+
+        painter.restore()   # ← removes clip
+
+        # 6. Tube outline
+        if is_highlight:
+            pen = QPen(QColor("#FFD700"), 3.5)
+            # Gold glow
+            glow_pen = QPen(QColor(255, 215, 0, 60), 9)
+            glow_pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+            painter.setPen(glow_pen)
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.drawPath(tp)
         else:
-            self._draw_animation_single_state(painter, self.anim_state_before, self.anim_state_after, 0, self.height())
+            pen = QPen(QColor(160, 185, 255, 145), 2.5)
 
-    def _draw_animation_single_state(self, painter, state_before, state_after, y_start, y_end):
-        cw = self.width()
-        src, dst = self.anim_action
-        
-        num_tubes = len(state_before)
-        total_w = num_tubes * self.tube_w + (num_tubes - 1) * self.tube_gap
-        start_x = (cw - total_w) // 2
-        tube_y = y_start + (y_end - y_start - self.tube_h) // 2
-        
-        for i in range(num_tubes):
-            if i != src and i != dst:
-                self._draw_single_tube(painter, start_x + i * (self.tube_w + self.tube_gap), tube_y, state_before[i], False)
-                
-        src_tube = list(state_before[src])
-        dst_tube = list(state_before[dst])
-        
-        color_val = src_tube[-1] if src_tube else 1
-        p = self.anim_progress
-        
-        src_x = start_x + src * (self.tube_w + self.tube_gap)
-        self._draw_single_tube_anim(painter, src_x, tube_y, src_tube, -p)
-        
-        dst_x = start_x + dst * (self.tube_w + self.tube_gap)
-        dst_tube_draw = list(dst_tube) + [color_val]
-        self._draw_single_tube_anim(painter, dst_x, tube_y, dst_tube_draw, -(1-p))
-
-    def _draw_single_tube_anim(self, painter, x, y, tube, offset_slots):
-        r = self.tube_corner
-        w = self.tube_w
-        h = self.tube_h
-        
-        path = QPainterPath()
-        path.moveTo(x, y)
-        path.lineTo(x, y + h - r)
-        path.arcTo(x, y + h - 2*r, 2*r, 2*r, 180, 90)
-        path.arcTo(x + w - 2*r, y + h - 2*r, 2*r, 2*r, 270, 90)
-        path.lineTo(x + w, y)
-        path.closeSubpath()
-        
-        painter.setBrush(QBrush(QColor("#ffffff")))
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawPath(path)
-        
-        for slot in range(CAPACITY):
-            if slot >= len(tube):
-                continue
-                
-            color = COLOR_MAP.get(tube[slot], QColor("#ffffff"))
-            cell_bot = y + h - slot * self.cell_h
-            cell_top = cell_bot - self.cell_h
-            
-            # Offset ô trên cùng
-            if slot == len(tube) - 1:
-                cell_top -= offset_slots * self.cell_h
-                if cell_top >= cell_bot:
-                    continue # Nước bị rút hết
-            
-            painter.setBrush(QBrush(color))
-            
-            if slot == 0:
-                water_path = QPainterPath()
-                water_path.moveTo(x + 2, cell_top)
-                water_path.lineTo(x + 2, cell_bot - r)
-                water_path.arcTo(x + 2, cell_bot - 2*r + 2, 2*r - 4, 2*r - 4, 180, 90)
-                water_path.arcTo(x + w - 2*r + 2, cell_bot - 2*r + 2, 2*r - 4, 2*r - 4, 270, 90)
-                water_path.lineTo(x + w - 2, cell_top)
-                water_path.closeSubpath()
-                painter.drawPath(water_path)
-            else:
-                painter.drawRect(int(x + 2), int(cell_top), int(w - 4), int(cell_bot - cell_top))
-                
-        pen = QPen(TUBE_OUTLINE, 3)
         pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         painter.setPen(pen)
         painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.drawPath(path)
+        painter.drawPath(tp)
         painter.drawLine(int(x), int(y), int(x + w), int(y))
 
+    # ─────────────────────── Slot helpers ─────────────────────────
 
+    def _draw_slot_solid(self, painter, x, y_top, y_bot, color_val):
+        """Non-top liquid slot: horizontal gradient rectangle."""
+        base  = COLOR_MAP.get(color_val,  QColor("#aaaaaa"))
+        light = COLOR_LIGHT.get(color_val, base)
+        dark  = COLOR_DARK.get(color_val,  base)
+
+        grad = QLinearGradient(x, y_top, x + self.tube_w, y_top)
+        grad.setColorAt(0.0,  light)
+        grad.setColorAt(0.45, base)
+        grad.setColorAt(1.0,  dark)
+
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(grad))
+        painter.drawRect(int(x + 1), int(y_top), int(self.tube_w - 2),
+                         int(y_bot - y_top + 1))
+
+    def _draw_slot_wave(self, painter, x, y_top, y_bot, color_val, tube_idx):
+        """Draw top liquid slot: solid fill + wave ripple at surface."""
+        if y_top >= y_bot:
+            return
+
+        base  = COLOR_MAP.get(color_val,  QColor("#aaaaaa"))
+        light = COLOR_LIGHT.get(color_val, base)
+        dark  = COLOR_DARK.get(color_val,  base)
+        w     = self.tube_w
+        amp   = self.wave_amplitude
+        phase = self.wave_phase + tube_idx * 1.15
+        n     = 34
+
+        # ── 1. Solid gradient fill for the ENTIRE slot (guarantees no gap) ──
+        grad = QLinearGradient(x, y_top, x + w, y_top)
+        grad.setColorAt(0.0,  light)
+        grad.setColorAt(0.45, base)
+        grad.setColorAt(1.0,  dark)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(grad))
+        painter.drawRect(int(x + 1), int(y_top), int(w - 2), int(y_bot - y_top + 1))
+
+        # ── 2. Wave ripple overlay at the liquid surface ──
+        # A closed shape from the sine wave down to y_top + amp*2
+        wave = QPainterPath()
+        wave.moveTo(x + 1, y_top + amp * math.sin(phase))
+        for i in range(1, n + 1):
+            t  = i / n
+            px = x + 1 + t * (w - 2)
+            py = y_top + amp * math.sin(phase + t * 4 * math.pi)
+            wave.lineTo(px, py)
+        wave.lineTo(x + w - 1, y_top + amp * 2 + 2)
+        wave.lineTo(x + 1,     y_top + amp * 2 + 2)
+        wave.closeSubpath()
+
+        wg = QLinearGradient(x, y_top - amp, x, y_top + amp * 2)
+        wg.setColorAt(0.0, light)
+        wg.setColorAt(0.6, base)
+        wg.setColorAt(1.0, base)
+        painter.setBrush(QBrush(wg))
+        painter.drawPath(wave)
+
+        # ── 3. White crest highlight line ──
+        crest = QPainterPath()
+        crest.moveTo(x + 1, y_top + amp * math.sin(phase))
+        for i in range(1, n + 1):
+            t  = i / n
+            crest.lineTo(x + 1 + t * (w - 2),
+                         y_top + amp * math.sin(phase + t * 4 * math.pi))
+        alpha = min(255, int(60 + amp * 10))
+        painter.setPen(QPen(QColor(255, 255, 255, alpha), 1.6))
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawPath(crest)
+        painter.setPen(Qt.PenStyle.NoPen)
+
+    # ═══════════════════ ANIMATION PAINTING ═══════════════════════
+
+    def _paint_animation(self, painter):
+        if self.is_multi_state:
+            n  = len(self.anim_state_before)
+            sh = self.height() // n if n > 0 else self.height()
+            cw = self.width()
+            for i in range(n):
+                ys, ye = i * sh, (i + 1) * sh
+                painter.setPen(QColor("#9999cc"))
+                painter.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+                painter.drawText(0, ys + 10, cw, 30,
+                                 Qt.AlignmentFlag.AlignHCenter,
+                                 f"Belief State {i + 1}")
+                self._draw_anim_state(
+                    painter,
+                    self.anim_state_before[i],
+                    self.anim_state_after[i],
+                    ys + 40, ye
+                )
+                if i < n - 1:
+                    painter.setPen(QPen(QColor("#2a2a5a"), 1, Qt.PenStyle.DashLine))
+                    painter.drawLine(50, ye, cw - 50, ye)
+        else:
+            self._draw_anim_state(
+                painter,
+                self.anim_state_before,
+                self.anim_state_after,
+                0, self.height()
+            )
+
+    def _draw_anim_state(self, painter, state_before, state_after, ys, ye):
+        cw       = self.width()
+        src, dst = self.anim_action
+        n        = len(state_before)
+        total_w  = n * self.tube_w + (n - 1) * self.tube_gap
+        x0       = (cw - total_w) // 2
+        ty       = ys + ((ye - ys) - self.tube_h) // 2
+        p        = self.anim_progress   # 0 → 1 overall
+
+        lbl_color = QColor("#666699")
+        lbl_font  = QFont("Segoe UI", 9)
+
+        src_tube  = list(state_before[src])
+        dst_tube  = list(state_before[dst])
+        color_val = src_tube[-1] if src_tube else 1
+
+        src_x = x0 + src * (self.tube_w + self.tube_gap)
+        dst_x = x0 + dst * (self.tube_w + self.tube_gap)
+        src_cx = src_x + self.tube_w / 2
+        dst_cx = dst_x + self.tube_w / 2
+        direction = 1.0 if dst_cx >= src_cx else -1.0
+
+        # ── PHASED ANIMATION ──────────────────────────────────────
+        # Phase 1: 0.00–0.20  Lift up + slide to hover position (vertical)
+        # Phase 2: 0.20–0.40  Tilt to MAX_TILT (mouth stays anchored)
+        # Phase 3: 0.40–0.70  Pouring (mouth stays anchored, liquid transfers)
+        # Phase 4: 0.70–0.85  Un-tilt to 0 (mouth stays anchored)
+        # Phase 5: 0.85–1.00  Lower back and slide to original position
+
+        def ease(t):
+            """Ease in-out (smoothstep)."""
+            t = max(0.0, min(1.0, t))
+            return t * t * (3.0 - 2.0 * t)
+
+        # Tilt angle calculation
+        if p < 0.20:
+            tilt_t = 0.0
+        elif p < 0.40:
+            tilt_t = ease((p - 0.20) / 0.20)
+        elif p < 0.70:
+            tilt_t = 1.0
+        elif p < 0.85:
+            tilt_t = ease(1.0 - (p - 0.70) / 0.15)
+        else:
+            tilt_t = 0.0
+        tilt_deg = tilt_t * MAX_TILT * direction
+        tilt_rad = math.radians(tilt_deg)
+        cos_t = math.cos(tilt_rad)
+        sin_t = math.sin(tilt_rad)
+
+        # Local mouth lip coords (where the pour happens)
+        local_lx = self.tube_w / 2 * (-direction)
+        local_ly = -self.tube_h + 12   # 12px inside mouth
+
+        # Anchor coordinates for the exit mouth during pour (centered above dst mouth)
+        target_exit_x = dst_x + self.tube_w / 2 - direction * 8
+        target_exit_y = ty - 28
+
+        # Position of the tube that keeps the mouth at target_exit
+        anchor_x = target_exit_x - (local_lx * cos_t - local_ly * sin_t) - self.tube_w / 2
+        anchor_lift = self.tube_h + (ty - target_exit_y) + (local_lx * sin_t + local_ly * cos_t)
+
+        # Interpolate the tube's position based on active phase
+        if p < 0.20:
+            # Phase 1: Slide to vertical hover position next to dst
+            slide_t = ease(p / 0.20)
+            # Coordinates at tilt = 0
+            anchor_x_0 = target_exit_x - local_lx - self.tube_w / 2
+            anchor_lift_0 = self.tube_h + (ty - target_exit_y) + local_ly
+
+            actual_src_x = src_x + (anchor_x_0 - src_x) * slide_t
+            lift = anchor_lift_0 * slide_t
+        elif p < 0.85:
+            # Phases 2, 3, 4: Keep mouth perfectly anchored in space while tilting
+            actual_src_x = anchor_x
+            lift = anchor_lift
+        else:
+            # Phase 5: Slide back to start position
+            slide_t = ease((p - 0.85) / 0.15)
+            anchor_x_0 = target_exit_x - local_lx - self.tube_w / 2
+            anchor_lift_0 = self.tube_h + (ty - target_exit_y) + local_ly
+
+            actual_src_x = anchor_x_0 + (src_x - anchor_x_0) * slide_t
+            lift = anchor_lift_0 * (1.0 - slide_t)
+
+        # Liquid transfer progress (during phase 3)
+        if p < 0.40:
+            pour_t = 0.0
+        elif p < 0.70:
+            pour_t = ease((p - 0.40) / 0.30)
+        else:
+            pour_t = 1.0
+
+        # ── Draw static tubes ──
+        for i in range(n):
+            if i in (src, dst):
+                continue
+            x = x0 + i * (self.tube_w + self.tube_gap)
+            self._draw_tube(painter, x, ty, state_before[i], False, i)
+            painter.setPen(lbl_color); painter.setFont(lbl_font)
+            painter.drawText(int(x), int(ty + self.tube_h + 10),
+                             int(self.tube_w), 22,
+                             Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
+                             f"Lọ {i}")
+
+        # ── Destination tube: liquid arriving ──
+        state_after_src = list(state_after[src])
+        state_after_dst = list(state_after[dst])
+        K = len(src_tube) - len(state_after_src)
+        if K <= 0:
+            K = 1
+
+        # Destination tube draws the final state, clipped to the current level:
+        # dst_num_blocks starts at len(dst_tube) and grows to len(dst_tube) + K
+        dst_num_blocks = len(dst_tube) + K * pour_t
+        self._draw_tube_anim(painter, dst_x, ty, state_after_dst, dst_num_blocks, dst)
+        painter.setPen(lbl_color); painter.setFont(lbl_font)
+        painter.drawText(int(dst_x), int(ty + self.tube_h + 10),
+                         int(self.tube_w), 22,
+                         Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
+                         f"Lọ {dst}")
+
+        # ── Source tube: lifted, slid horizontally, tilted ──
+        # Source tube draws the initial state, clipped to the current level:
+        # src_num_blocks starts at len(src_tube) and shrinks to len(src_tube) - K
+        src_num_blocks = len(src_tube) - K * pour_t
+        self._draw_tube_tilted(
+            painter, actual_src_x, ty, src_tube,
+            lift, tilt_deg, src, anim_num_blocks=src_num_blocks
+        )
+        # Label stays at original position
+        painter.setPen(lbl_color); painter.setFont(lbl_font)
+        painter.drawText(int(src_x), int(ty + self.tube_h + 10),
+                         int(self.tube_w), 22,
+                         Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
+                         f"Lọ {src}")
+
+        # ── Pour stream (only while tilted and pouring) ──
+        is_pouring = 0.25 < p < 0.80
+        if src_tube and is_pouring:
+            tilt_rad = math.radians(tilt_deg)
+            cos_t    = math.cos(tilt_rad)
+            sin_t    = math.sin(tilt_rad)
+
+            # Pivot = bottom-centre of src tube at its current position
+            piv_x = actual_src_x + self.tube_w / 2
+            piv_y = ty + self.tube_h - lift
+
+            # Start point: slightly inside the tube mouth along the tilted bottom wall
+            local_lx = self.tube_w / 2 * (-direction)
+            local_ly = -self.tube_h + 12   # 12 pixels inside the tube
+
+            exit_x = piv_x + local_lx * cos_t - local_ly * sin_t
+            exit_y = piv_y + local_lx * sin_t + local_ly * cos_t
+
+            # Launch vector: shoots out of mouth along the longitudinal tube axis
+            launch_dist = self.tube_w * 0.40
+            vx = sin_t * launch_dist
+            vy = -cos_t * launch_dist
+
+            p0 = (exit_x, exit_y)
+            p1 = (exit_x + vx, exit_y + vy)
+
+            # Entry: top of current dst liquid level
+            n_dst   = len(dst_tube)
+            entry_x = dst_x + self.tube_w / 2
+            entry_y = ty + self.tube_h - (n_dst + 1) * self.cell_h
+
+            p3 = (entry_x, entry_y)
+            
+            # Control point 2: approach entry vertically from above
+            drop = abs(entry_y - exit_y)
+            p2 = (entry_x, entry_y - min(drop * 0.45, 65))
+
+            # Stream fade based on tilt amount
+            stream_fade = min(tilt_t * 3.0, 1.0)
+            self._draw_pour_stream_gravity(
+                painter, p0, p1, p2, p3,
+                color_val, stream_fade
+            )
+
+    def _draw_tube_tilted(self, painter, cur_x, cur_y, tube,
+                           lift, tilt_deg, tube_idx, anim_num_blocks=None):
+        """
+        Draw the source tube at (cur_x, cur_y) lifted by `lift` and
+        rotated by `tilt_deg` around its bottom-centre pivot.
+        """
+        w, h = self.tube_w, self.tube_h
+
+        # Pivot = bottom-centre, elevated
+        piv_x = cur_x + w / 2
+        piv_y = cur_y + h          # bottom-centre before lift
+
+        painter.save()
+        painter.translate(piv_x, piv_y - lift)
+        painter.rotate(tilt_deg)
+        
+        if anim_num_blocks is None:
+            anim_num_blocks = len(tube)
+            
+        self._draw_tube_anim(painter, -w / 2, -h, tube, anim_num_blocks, tube_idx)
+        painter.restore()
+
+    def _draw_tube_anim(self, painter, x, y, tube, num_blocks, tube_idx=0):
+        """Draw tube with liquid clipped to a fractional number of blocks."""
+        w  = self.tube_w
+        h  = self.tube_h
+        tp = self._tube_path(x, y)
+
+        painter.save()
+        painter.setClipPath(tp)
+
+        # Interior
+        bg = QLinearGradient(x, y, x + w, y)
+        bg.setColorAt(0.0, QColor(4,  4,  18, 200))
+        bg.setColorAt(0.5, QColor(12, 12, 35, 130))
+        bg.setColorAt(1.0, QColor(4,  4,  18, 200))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(bg))
+        painter.drawPath(tp)
+
+        # ── Color blocks (Clipped dynamically by current liquid height) ──
+        y_top_liquid = y + h - num_blocks * self.cell_h
+        
+        # Create rectangular path for the liquid height clip
+        rect_path = QPainterPath()
+        rect_path.addRect(x - 5, y_top_liquid, w + 10, h + 10)
+        
+        # Intersect with the U-shape tube path so the liquid remains inside the rounded bottom
+        color_clip_path = tp.intersected(rect_path)
+        
+        painter.save()
+        painter.setClipPath(color_clip_path)
+
+        for slot in range(len(tube)):
+            cv    = tube[slot]
+            if cv == -1:
+                continue
+            y_bot = y + h - slot * self.cell_h
+            y_top = y_bot - self.cell_h
+            self._draw_slot_solid(painter, x, y_top, y_bot, cv)
+
+        painter.restore()
+
+        # Glass highlights
+        lh = QLinearGradient(x, y, x + w * 0.40, y)
+        lh.setColorAt(0.0, QColor(255, 255, 255, 70))
+        lh.setColorAt(0.5, QColor(255, 255, 255, 20))
+        lh.setColorAt(1.0, QColor(255, 255, 255, 0))
+        painter.setBrush(QBrush(lh))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawPath(tp)
+
+        painter.restore()
+
+        pen = QPen(QColor(160, 185, 255, 145), 2.5)
+        pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        painter.setPen(pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawPath(tp)
+        painter.drawLine(int(x), int(y), int(x + w), int(y))
+
+    def _draw_pour_stream_gravity(self, painter, p0, p1, p2, p3, color_val, fade):
+        """
+        Draw a gravity-fed downward stream of liquid using cubic Bezier.
+        The stream starts at p0 (inside the tilted tube mouth), flows along p1
+        (pointing out of the tube), and curves smoothly to p2 and p3 (the destination).
+        """
+        if fade < 0.01:
+            return
+
+        base  = COLOR_MAP.get(color_val, QColor("#aaaaaa"))
+        light = COLOR_LIGHT.get(color_val, base)
+
+        # Made stream thicker to match reference image
+        stream_w = max(5, self.tube_w * 0.24)
+
+        p0x, p0y = p0
+        p1x, p1y = p1
+        p2x, p2y = p2
+        p3x, p3y = p3
+
+        def cbez(t, a, b, c, d):
+            u = 1 - t
+            return u*u*u*a + 3*u*u*t*b + 3*u*t*t*c + t*t*t*d
+
+        n = 30
+        lefts, rights = [], []
+
+        for i in range(n + 1):
+            t  = i / n
+            bx = cbez(t, p0x, p1x, p2x, p3x)
+            by = cbez(t, p0y, p1y, p2y, p3y)
+
+            # Tangent via derivative of cubic bezier
+            if i < n:
+                tx = cbez((i+1)/n, p0x, p1x, p2x, p3x) - bx
+                ty = cbez((i+1)/n, p0y, p1y, p2y, p3y) - by
+            else:
+                tx = bx - cbez((i-1)/n, p0x, p1x, p2x, p3x)
+                ty = by - cbez((i-1)/n, p0y, p1y, p2y, p3y)
+
+            L  = math.sqrt(tx*tx + ty*ty) or 1.0
+            nx, ny = -ty / L, tx / L
+
+            # Taper: thick at start, slightly thinner, then wider landing
+            taper = 0.75 + 0.25 * (1.0 - t)
+            sw = stream_w * taper
+
+            lefts.append((bx - nx * sw, by - ny * sw))
+            rights.append((bx + nx * sw, by + ny * sw))
+
+        # ── Fill stream body ──
+        stream = QPainterPath()
+        stream.moveTo(*lefts[0])
+        for pt in lefts[1:]:
+            stream.lineTo(*pt)
+        stream.lineTo(*rights[-1])
+        for pt in reversed(rights[:-1]):
+            stream.lineTo(*pt)
+        stream.closeSubpath()
+
+        sc = QColor(base)
+        sc.setAlpha(int(230 * fade))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(sc))
+        painter.drawPath(stream)
+
+        # ── Highlight strip ──
+        hl = QPainterPath()
+        hl.moveTo(lefts[0][0] + (rights[0][0] - lefts[0][0]) * 0.28,
+                  lefts[0][1] + (rights[0][1] - lefts[0][1]) * 0.28)
+        for i in range(1, len(lefts)):
+            px = lefts[i][0] + (rights[i][0] - lefts[i][0]) * 0.28
+            py = lefts[i][1] + (rights[i][1] - lefts[i][1]) * 0.28
+            hl.lineTo(px, py)
+        lc = QColor(light)
+        lc.setAlpha(int(110 * fade))
+        painter.setPen(QPen(lc, 2.2))
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawPath(hl)
+
+        painter.setPen(Qt.PenStyle.NoPen)
+
+
+# ═══════════════════════════════════════════════════════════════════
 class View(QMainWindow):
+    """Main window — dark game theme matching Water Sort Puzzle."""
+
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
-        
-        self.setWindowTitle("Water Puzzle Sort")
-        self.resize(1400, 850)
+
+        self.setWindowTitle("💧 Water Sort Puzzle — AI Solver")
+        self.resize(1400, 900)
         self.showMaximized()
-        
-        # Main widget
-        self.central_widget = QWidget()
-        self.central_widget.setStyleSheet(f"background-color: {BG_COLOR};")
-        self.setCentralWidget(self.central_widget)
-        
-        self.main_layout = QVBoxLayout(self.central_widget)
-        self.main_layout.setContentsMargins(15, 15, 15, 15)
-        self.main_layout.setSpacing(15)
-        
-        self._init_top_bar()
-        self._init_middle_area()
-        self._init_bottom_bar()
-        
-    def _init_top_bar(self):
-        # Vùng 1
-        self.top_frame = QFrame()
-        self.top_frame.setFixedHeight(70)
-        self.top_frame.setStyleSheet("""
-            QFrame { background-color: transparent; }
-            QLabel { font-size: 14px; font-weight: bold; color: #333; }
-            QComboBox { 
-                font-size: 14px; padding: 5px; width: 250px; 
-                background: white; border: 1px solid #ccc; border-radius: 5px;
-            }
-            QComboBox::drop-down { border: none; }
+
+        # Global dark palette
+        self.setStyleSheet(f"""
+            QMainWindow  {{ background-color: {BG_COLOR}; }}
+            QWidget      {{ background-color: transparent; color: #ddddff; font-family: 'Segoe UI'; }}
+            QScrollBar:vertical {{
+                background: #11112a; width: 8px; border-radius: 4px; margin: 0;
+            }}
+            QScrollBar::handle:vertical {{
+                background: #2a2a6a; border-radius: 4px; min-height: 24px;
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
         """)
-        top_layout = QHBoxLayout(self.top_frame)
-        top_layout.setContentsMargins(10, 0, 10, 0)
-        
-        top_layout.addWidget(QLabel("Chọn loại thuật toán:"))
+
+        central = QWidget()
+        central.setStyleSheet(f"background-color: {BG_COLOR};")
+        self.setCentralWidget(central)
+
+        self.main_layout = QVBoxLayout(central)
+        self.main_layout.setContentsMargins(14, 14, 14, 14)
+        self.main_layout.setSpacing(11)
+
+        self._init_top_bar()
+        self._init_middle()
+        self._init_bottom_bar()
+
+    # ─────────────────────── Top bar ──────────────────────────────
+
+    def _init_top_bar(self):
+        COMBO_STYLE = f"""
+            QComboBox {{
+                background-color: #54398c;
+                color: #ffffff;
+                border: 1.5px solid #7c5cb9;
+                border-radius: 8px;
+                padding: 5px 14px;
+                font-size: 13px;
+                font-weight: bold;
+                min-width: 210px;
+            }}
+            QComboBox::drop-down {{ border: none; width: 28px; }}
+            QComboBox QAbstractItemView {{
+                background-color: #54398c;
+                color: #ffffff;
+                selection-background-color: #7c5cb9;
+                border: 1.5px solid #7c5cb9;
+                outline: none;
+            }}
+            QLabel {{
+                color: #d1c4e9;
+                font-size: 12px;
+                font-weight: bold;
+            }}
+        """
+
+        self.top_frame = QFrame()
+        self.top_frame.setFixedHeight(62)
+        self.top_frame.setStyleSheet(
+            f"QFrame {{ background-color: {PANEL_BG}; border-radius: 12px;"
+            f" border: 1px solid #5a3f95; }}" + COMBO_STYLE
+        )
+
+        lay = QHBoxLayout(self.top_frame)
+        lay.setContentsMargins(22, 0, 22, 0)
+        lay.setSpacing(14)
+
+        # Game title
+        title = QLabel("💧 Water Sort Puzzle")
+        title.setStyleSheet(
+            "font-size: 20px; font-weight: bold;"
+            f" color: {ACCENT_COLOR}; letter-spacing: 1px;"
+        )
+
+        lbl_cat  = QLabel("Loại thuật toán:")
         self.combo_category = QComboBox()
-        top_layout.addWidget(self.combo_category)
-        
-        top_layout.addSpacing(30)
-        
-        top_layout.addWidget(QLabel("Chọn thuật toán:"))
+
+        lbl_algo = QLabel("Thuật toán:")
         self.combo_algo = QComboBox()
-        top_layout.addWidget(self.combo_algo)
-        
-        top_layout.addSpacing(30)
-        
-        self.lbl_turn = QLabel("Lượt đầu:")
+
+        self.lbl_turn  = QLabel("Lượt đầu:")
         self.combo_turn = QComboBox()
         self.combo_turn.addItems(["Người đi trước", "Máy đi trước"])
-        self.combo_turn.setFixedWidth(150)
-        
-        top_layout.addWidget(self.lbl_turn)
-        top_layout.addWidget(self.combo_turn)
-        
-        top_layout.addStretch()
-        
+        self.combo_turn.setFixedWidth(165)
+        self.combo_turn.setStyleSheet("""
+            QComboBox {
+                background-color: #54398c; color: #ffffff;
+                border: 1.5px solid #7c5cb9; border-radius: 8px;
+                padding: 5px 12px; font-size: 13px; font-weight: bold;
+            }
+            QComboBox::drop-down { border: none; }
+            QComboBox QAbstractItemView {
+                background-color: #54398c; color: #ffffff;
+                selection-background-color: #7c5cb9;
+            }
+        """)
+
+        lay.addWidget(title)
+        lay.addStretch()
+        lay.addWidget(lbl_cat)
+        lay.addWidget(self.combo_category)
+        lay.addSpacing(18)
+        lay.addWidget(lbl_algo)
+        lay.addWidget(self.combo_algo)
+        lay.addSpacing(18)
+        lay.addWidget(self.lbl_turn)
+        lay.addWidget(self.combo_turn)
+        lay.addStretch()
+
         self.main_layout.addWidget(self.top_frame)
 
-    def _init_middle_area(self):
-        # Vùng 2 & 3
-        mid_layout = QHBoxLayout()
-        
-        # Vùng 2 - Puzzle
+    # ─────────────────────── Middle area ──────────────────────────
+
+    def _init_middle(self):
+        mid = QHBoxLayout()
+        mid.setSpacing(11)
+
+        # ── Puzzle scroll area ──────────────────────────────────
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setStyleSheet("""
-            QScrollArea {
-                background-color: white; border-radius: 10px; border: 1px solid #ddd;
-            }
-            QWidget#scroll_content { background-color: white; }
+        self.scroll_area.setStyleSheet(f"""
+            QScrollArea {{
+                background-color: {BG_COLOR};
+                border-radius: 12px;
+                border: 1px solid #5a3f95;
+            }}
         """)
-        
-        # Thêm hiệu ứng shadow bằng Qt (nếu cần thiết có thể dùng QGraphicsDropShadowEffect)
+
         shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(15)
-        shadow.setColor(QColor(0, 0, 0, 30))
-        shadow.setOffset(0, 5)
+        shadow.setBlurRadius(22)
+        shadow.setColor(QColor(0, 240, 255, 45))   # Bright cyan glow
+        shadow.setOffset(0, 4)
         self.scroll_area.setGraphicsEffect(shadow)
-        
+
         self.puzzle_view = PuzzleView()
-        self.puzzle_view.setObjectName("scroll_content")
+        self.puzzle_view.setObjectName("puzzle_view")
         self.scroll_area.setWidget(self.puzzle_view)
-        
-        mid_layout.addWidget(self.scroll_area, stretch=7) # Chiếm 70%
-        
-        # Vùng 3 - Bảng điều khiển
+        mid.addWidget(self.scroll_area, stretch=7)
+
+        # ── Control panel ───────────────────────────────────────
         self.panel_frame = QFrame()
-        self.panel_frame.setStyleSheet(f"background-color: {PANEL_BG}; border-radius: 10px; border: 1px solid #ddd;")
-        self.panel_frame.setFixedWidth(300)
-        
-        panel_shadow = QGraphicsDropShadowEffect()
-        panel_shadow.setBlurRadius(15)
-        panel_shadow.setColor(QColor(0, 0, 0, 30))
-        panel_shadow.setOffset(0, 5)
-        self.panel_frame.setGraphicsEffect(panel_shadow)
-        
-        panel_layout = QVBoxLayout(self.panel_frame)
-        panel_layout.setContentsMargins(20, 20, 20, 20)
-        panel_layout.setSpacing(15)
-        
-        lbl_title = QLabel("BẢNG ĐIỀU KHIỂN")
-        lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl_title.setStyleSheet("font-size: 18px; font-weight: bold; border: none; color: #333;")
-        panel_layout.addWidget(lbl_title)
-        
-        btn_style = """
-            QPushButton {
-                background-color: #dfe4ea;
-                color: #2f3542;
-                font-size: 18px;
-                font-weight: bold;
-                border-radius: 8px;
-                height: 55px;
-            }
-            QPushButton:hover {
-                background-color: #c8d6e5;
-            }
-            QPushButton:pressed {
-                background-color: #a4b0be;
-            }
-            QPushButton:disabled {
-                background-color: #f1f2f6;
-                color: #ced6e0;
-            }
-        """
-        
-        self.btn_start = QPushButton("Initial")
-        self.btn_start.setStyleSheet(btn_style)
-        
-        self.btn_random = QPushButton("Random")
-        self.btn_random.setStyleSheet(btn_style)
-        
-        self.btn_execute = QPushButton("Execute")
-        self.btn_execute.setStyleSheet(btn_style)
-        
-        self.btn_next = QPushButton("Next")
-        self.btn_next.setStyleSheet(btn_style)
-        
-        self.btn_last = QPushButton("Last")
-        self.btn_last.setStyleSheet(btn_style)
-        
-        self.btn_remove = QPushButton("Remove")
-        self.btn_remove.setStyleSheet(btn_style)
-        
-        panel_layout.addWidget(self.btn_start)
-        panel_layout.addWidget(self.btn_random)
-        panel_layout.addWidget(self.btn_execute)
-        panel_layout.addWidget(self.btn_next)
-        panel_layout.addWidget(self.btn_last)
-        panel_layout.addWidget(self.btn_remove)
-        panel_layout.addStretch()
-        
-        mid_layout.addWidget(self.panel_frame, stretch=3)
-        self.main_layout.addLayout(mid_layout)
+        self.panel_frame.setFixedWidth(238)
+        self.panel_frame.setStyleSheet(f"""
+            QFrame {{
+                background-color: {PANEL_BG};
+                border-radius: 14px;
+                border: 1px solid #5a3f95;
+            }}
+        """)
+
+        ps = QGraphicsDropShadowEffect()
+        ps.setBlurRadius(24)
+        ps.setColor(QColor(0, 240, 255, 45))   # Bright cyan glow
+        ps.setOffset(0, 5)
+        self.panel_frame.setGraphicsEffect(ps)
+
+        pl = QVBoxLayout(self.panel_frame)
+        pl.setContentsMargins(16, 22, 16, 22)
+        pl.setSpacing(11)
+
+        ptitle = QLabel("CONTROLS")
+        ptitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        ptitle.setStyleSheet(f"""
+            font-size: 13px; font-weight: bold;
+            color: {ACCENT_COLOR}; letter-spacing: 3px; border: none;
+        """)
+        pl.addWidget(ptitle)
+
+        # Separator line
+        sep = QFrame()
+        sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet("border: none; background-color: #1a3060; max-height: 1px;")
+        pl.addWidget(sep)
+        pl.addSpacing(4)
+
+        def btn(text, top_c, bot_c, h_top="#2060a0", h_bot="#3090d0"):
+            b = QPushButton(text)
+            b.setStyleSheet(f"""
+                QPushButton {{
+                    background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                        stop:0 {top_c}, stop:1 {bot_c});
+                    color: white;
+                    font-size: 14px;
+                    font-weight: bold;
+                    border-radius: 10px;
+                    height: 46px;
+                    border: none;
+                }}
+                QPushButton:hover {{
+                    background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                        stop:0 {h_top}, stop:1 {h_bot});
+                }}
+                QPushButton:pressed {{
+                    background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                        stop:0 {bot_c}, stop:1 {top_c});
+                }}
+                QPushButton:disabled {{
+                    background: #111130; color: #333355;
+                }}
+            """)
+            return b
+
+        self.btn_start   = btn("⚡  Initial",
+                                "#0d3a6e", "#1565c0", "#1565c0", "#1e88e5")
+        self.btn_random  = btn("🎲  Random",
+                                "#0d5c2a", "#1b8a44", "#1b8a44", "#27b05a")
+        self.btn_execute = btn("▶  Execute",
+                                "#4a0080", "#8e24aa", "#8e24aa", "#ba52cd")
+        self.btn_next    = btn("⏭  Next",
+                                "#0d3560", "#1a5fa0", "#1a5fa0", "#2480cc")
+        self.btn_last    = btn("⏮  Back",
+                                "#0d3560", "#1a5fa0", "#1a5fa0", "#2480cc")
+        self.btn_remove  = btn("✕  Reset",
+                                "#6e0d0d", "#c0211a", "#c0211a", "#e53935")
+
+        for b in (self.btn_start, self.btn_random, self.btn_execute,
+                  self.btn_next, self.btn_last, self.btn_remove):
+            pl.addWidget(b)
+
+        pl.addStretch()
+        mid.addWidget(self.panel_frame, stretch=3)
+        self.main_layout.addLayout(mid)
+
+    # ─────────────────────── Bottom bar ───────────────────────────
 
     def _init_bottom_bar(self):
-        # Vùng 4 - Kết quả
         self.bottom_frame = QFrame()
-        self.bottom_frame.setStyleSheet(f"background-color: {PANEL_BG}; border-radius: 10px; border: 1px solid #ddd;")
-        
-        bottom_shadow = QGraphicsDropShadowEffect()
-        bottom_shadow.setBlurRadius(15)
-        bottom_shadow.setColor(QColor(0, 0, 0, 30))
-        bottom_shadow.setOffset(0, 5)
-        self.bottom_frame.setGraphicsEffect(bottom_shadow)
-        
-        bottom_layout = QGridLayout(self.bottom_frame)
-        bottom_layout.setContentsMargins(20, 15, 20, 15)
-        
-        lbl_style = "font-size: 14px; color: #333;"
-        val_style = "font-size: 14px; color: #2f3542;"
-        
-        self.lbl_path = QLabel("<b>Path:</b> ")
-        self.lbl_path.setStyleSheet(lbl_style)
+        self.bottom_frame.setFixedHeight(72)
+        self.bottom_frame.setStyleSheet(f"""
+            QFrame {{
+                background-color: {PANEL_BG};
+                border-radius: 12px;
+                border: 1px solid #5a3f95;
+            }}
+            QLabel {{ color: #d1c4e9; font-size: 12px; }}
+        """)
+
+        bs = QGraphicsDropShadowEffect()
+        bs.setBlurRadius(18)
+        bs.setColor(QColor(0, 0, 0, 50))
+        bs.setOffset(0, -3)
+        self.bottom_frame.setGraphicsEffect(bs)
+
+        lay = QGridLayout(self.bottom_frame)
+        lay.setContentsMargins(20, 8, 20, 8)
+        lay.setHorizontalSpacing(28)
+
+        self.lbl_path = QLabel(f"<b style='color:{ACCENT_COLOR}'>Path:</b> ")
         self.lbl_path.setWordWrap(True)
-        
-        bottom_layout.addWidget(self.lbl_path, 0, 0, 1, 6) # Row 0, span 6 cols
-        
-        self.lbl_success = QLabel("Success:")
-        self.lbl_cost = QLabel("Cost:")
-        self.lbl_explored = QLabel("Explored:")
+        lay.addWidget(self.lbl_path, 0, 0, 1, 6)
+
+        self.lbl_success   = QLabel("Success:")
+        self.lbl_cost      = QLabel("Cost:")
+        self.lbl_explored  = QLabel("Explored:")
         self.lbl_generated = QLabel("Generated:")
-        self.lbl_depth = QLabel("Depth:")
-        self.lbl_runtime = QLabel("Runtime:")
-        
-        for lbl in [self.lbl_success, self.lbl_cost, self.lbl_explored, self.lbl_generated, self.lbl_depth, self.lbl_runtime]:
-            lbl.setStyleSheet(val_style)
-            
-        bottom_layout.addWidget(self.lbl_success, 1, 0)
-        bottom_layout.addWidget(self.lbl_cost, 1, 1)
-        bottom_layout.addWidget(self.lbl_explored, 1, 2)
-        bottom_layout.addWidget(self.lbl_generated, 1, 3)
-        bottom_layout.addWidget(self.lbl_depth, 1, 4)
-        bottom_layout.addWidget(self.lbl_runtime, 1, 5)
-        
+        self.lbl_depth     = QLabel("Depth:")
+        self.lbl_runtime   = QLabel("Runtime:")
+
+        for col, lbl in enumerate([
+            self.lbl_success, self.lbl_cost, self.lbl_explored,
+            self.lbl_generated, self.lbl_depth, self.lbl_runtime
+        ]):
+            lay.addWidget(lbl, 1, col)
+
         self.main_layout.addWidget(self.bottom_frame)
 
-    # ── CÁC HÀM API GIỮ NGUYÊN CHO CONTROLLER ──
-    
+    # ═══════════════════════ Public API ═══════════════════════════
+
     def clear_result_fields(self):
-        self.lbl_path.setText("<b>Path:</b> ")
-        self.lbl_success.setText("<b>Success:</b>")
-        self.lbl_cost.setText("<b>Cost:</b>")
-        self.lbl_explored.setText("<b>Explored:</b>")
-        self.lbl_generated.setText("<b>Generated:</b>")
-        self.lbl_depth.setText("<b>Depth:</b>")
-        self.lbl_runtime.setText("<b>Runtime:</b>")
+        ac = ACCENT_COLOR
+        self.lbl_path.setText(f"<b style='color:{ac}'>Path:</b> ")
+        self.lbl_success.setText(  f"<b style='color:{ac}'>Success:</b>")
+        self.lbl_cost.setText(     f"<b style='color:{ac}'>Cost:</b>")
+        self.lbl_explored.setText( f"<b style='color:{ac}'>Explored:</b>")
+        self.lbl_generated.setText(f"<b style='color:{ac}'>Generated:</b>")
+        self.lbl_depth.setText(    f"<b style='color:{ac}'>Depth:</b>")
+        self.lbl_runtime.setText(  f"<b style='color:{ac}'>Runtime:</b>")
 
     def set_result_fields(self, result):
         if result is None:
             self.clear_result_fields()
             return
-            
-        self.lbl_success.setText(f"<b>Success:</b> {result.success}")
-        self.lbl_cost.setText(f"<b>Cost:</b> {result.cost}")
-        self.lbl_explored.setText(f"<b>Explored:</b> {result.explored}")
-        self.lbl_generated.setText(f"<b>Generated:</b> {result.generated}")
-        self.lbl_depth.setText(f"<b>Depth:</b> {result.depth}")
-        self.lbl_runtime.setText(f"<b>Runtime:</b> {result.runtime:.6f}s")
-        path_str = " ".join(str(p) for p in result.path) if result.path else "None"
-        self.lbl_path.setText(f"<b>Path:</b> {path_str}")
+
+        ac = ACCENT_COLOR
+        wc = "#ddeeff"   # value color
+
+        def f(label, val):
+            return f"<b style='color:{ac}'>{label}:</b> <span style='color:{wc}'>{val}</span>"
+
+        ok_txt = "✅ Yes" if result.success else "❌ No"
+        self.lbl_success.setText(  f(  "Success",   ok_txt))
+        self.lbl_cost.setText(     f(     "Cost",   result.cost))
+        self.lbl_explored.setText( f( "Explored",   result.explored))
+        self.lbl_generated.setText(f("Generated",   result.generated))
+        self.lbl_depth.setText(    f(    "Depth",   result.depth))
+        self.lbl_runtime.setText(  f(  "Runtime",   f"{result.runtime:.4f}s"))
+
+        path_str = " → ".join(str(p) for p in result.path) if result.path else "None"
+        self.lbl_path.setText(
+            f"<b style='color:{ac}'>Path:</b>"
+            f" <span style='color:#aabbdd'>{path_str}</span>"
+        )
 
     def show_step_info(self, step, total, action=None):
-        pass # Có thể thiết kế thêm nhãn ở panel nếu cần
+        pass  # Could extend with a step counter label if desired
 
     def draw_state(self, state, highlight_tube=None):
         self.puzzle_view.set_state(state, highlight_tube)
-        
+
     def draw_partial_states(self, state_list):
         self.puzzle_view.set_state(state_list)
-        
+
     def animate_pour(self, state_before, state_after, action, on_done):
         self.puzzle_view.start_animation(state_before, state_after, action, on_done)
-        
+
     def show_adversarial_ui(self):
         self.lbl_turn.show()
         self.combo_turn.show()
-        
-        self.bottom_frame.show()
-        
-        # Ẩn button Execute, Next, Last, Remove
         self.btn_execute.hide()
         self.btn_next.hide()
         self.btn_last.hide()
         self.btn_remove.hide()
-
         self.lbl_path.hide()
         self.lbl_explored.hide()
         self.lbl_generated.hide()
         self.lbl_depth.hide()
         self.lbl_runtime.hide()
-        
-        self.lbl_success.setText("<b>Turn:</b> Human")
-        self.lbl_cost.setText("<b>Result:</b> ")
-        
+        ac = ACCENT_COLOR
+        self.lbl_success.setText(f"<b style='color:{ac}'>Turn:</b> <span style='color:#ddeeff'>Human</span>")
+        self.lbl_cost.setText(   f"<b style='color:{ac}'>Result:</b> ")
+
     def hide_adversarial_ui(self):
         self.lbl_turn.hide()
         self.combo_turn.hide()
-        
-        self.bottom_frame.show()
-        
         self.btn_execute.show()
         self.btn_next.show()
         self.btn_last.show()
         self.btn_remove.show()
-
         self.lbl_path.show()
         self.lbl_explored.show()
         self.lbl_generated.show()
@@ -650,8 +1185,13 @@ class View(QMainWindow):
         self.clear_result_fields()
 
     def update_adv_bottom(self, turn, result=""):
-        self.lbl_success.setText(f"<b>Turn:</b> {turn}")
+        ac = ACCENT_COLOR
+        self.lbl_success.setText(
+            f"<b style='color:{ac}'>Turn:</b> <span style='color:#ddeeff'>{turn}</span>"
+        )
         if result:
-            self.lbl_cost.setText(f"<b>Result:</b> {result}")
+            self.lbl_cost.setText(
+                f"<b style='color:{ac}'>Result:</b> <span style='color:#ddeeff'>{result}</span>"
+            )
         else:
-            self.lbl_cost.setText("<b>Result:</b> ")
+            self.lbl_cost.setText(f"<b style='color:{ac}'>Result:</b> ")
