@@ -419,7 +419,8 @@ class Controller:
                 action = gc.history[-1]
 
             if action:
-                self.view.update_adv_bottom("Human")
+                alg_result = getattr(gc, 'last_result', None)
+                self.view.update_adv_bottom("Human", alg_result=alg_result)
                 
                 def on_done():
                     self._draw_current()
@@ -444,7 +445,8 @@ class Controller:
             "draw": "Draw",
         }
         text = status_map.get(gc.status, "Game Over")
-        self.view.update_adv_bottom("None", text)
+        alg_result = getattr(gc, 'last_result', None)
+        self.view.update_adv_bottom("None", result_text=text, alg_result=alg_result)
 
     # ══════════════════════════════════════
     # UTILS

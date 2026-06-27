@@ -39,9 +39,14 @@ def game(START, turn, algorithm):
 
             for action in actions:
                 child = node.expand(action)
-                eval = algorithm(child, False)
-                if eval > max_eval:
-                    max_eval = eval
+                res = algorithm(child, False)
+                if isinstance(res, tuple):
+                    eval_score = res[0]
+                else:
+                    eval_score = res
+                    
+                if eval_score > max_eval:
+                    max_eval = eval_score
                     best_action = action
 
             print("Move:", best_action)
@@ -109,6 +114,10 @@ class GameController:
         if self.status != "playing" or self.turn != "machine":
             return None
 
+        import time
+        from Core.Result import solution
+        start_time = time.time()
+
         actions = get_actions(self.node.state)
         if not actions:
             self.status = "draw"
@@ -116,13 +125,27 @@ class GameController:
 
         max_eval = -2
         best_action = actions[0]
+        
+        total_explored = 0
+        total_generated = 1
 
         for action in actions:
             child = self.node.expand(action)
-            eval_score = self.algo(child, False)
+            res = self.algo(child, False)
+            
+            if isinstance(res, tuple):
+                eval_score, alg_result = res
+                if hasattr(alg_result, 'explored'):
+                    total_explored += alg_result.explored
+                if hasattr(alg_result, 'generated'):
+                    total_generated += alg_result.generated
+            else:
+                eval_score = res
+                
             if eval_score > max_eval:
                 max_eval = eval_score
                 best_action = action
 
+        self.last_result = solution(None, total_explored, total_generated, start_time)
         self.apply_move(best_action[0], best_action[1])
         return best_action

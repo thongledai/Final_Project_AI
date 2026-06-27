@@ -43,9 +43,9 @@ COLOR_DARK = {
     7: QColor("#D84315"),
 }
 
-BG_COLOR        = "#000000"  # Vibrant deep violet (much brighter and closer to the reference image)
-PANEL_BG        = "#000000"  # Brighter warm purple panel
-ACCENT_COLOR    = "#00F0FF"  # Brilliant electric cyan
+BG_COLOR        = "#D1D5DB"  # Darker light gray background
+PANEL_BG        = "#FFFFFF"  # White panel
+ACCENT_COLOR    = "#1E293B"  # Dark gray text
 
 
 # ═══════════════════════ TUBE GEOMETRY ════════════════════════════
@@ -115,7 +115,7 @@ class PuzzleView(QWidget):
 
         self.setMinimumSize(800, 450)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setStyleSheet(f"background-color: {BG_COLOR};")
+        self.setStyleSheet(f"background-color: {PANEL_BG};")
 
     # ─────────────────────── Dimensions ───────────────────────────
 
@@ -242,14 +242,14 @@ class PuzzleView(QWidget):
             sh = max(self.tube_h + 120, ch // n if n > 0 else ch)
             for i, st in enumerate(self.state_data):
                 ys, ye = i * sh, (i + 1) * sh
-                painter.setPen(QColor("#9999cc"))
+                painter.setPen(QColor("#333333"))
                 painter.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
                 painter.drawText(0, ys + 10, cw, 30,
                                  Qt.AlignmentFlag.AlignHCenter,
                                  f"Belief State {i + 1}")
                 self._draw_tubes(painter, st, cw, ys + 40, ye, None)
                 if i < n - 1:
-                    painter.setPen(QPen(QColor("#2a2a5a"), 1, Qt.PenStyle.DashLine))
+                    painter.setPen(QPen(QColor("#CCCCCC"), 1, Qt.PenStyle.DashLine))
                     painter.drawLine(50, ye, cw - 50, ye)
         else:
             self._draw_tubes(painter, self.state_data, cw, 0, ch, self.highlight_tube)
@@ -266,8 +266,8 @@ class PuzzleView(QWidget):
             x = x0 + i * (self.tube_w + self.tube_gap)
             self._draw_tube(painter, x, ty, tube, i == highlight, i)
 
-            painter.setPen(QColor("#666699"))
-            painter.setFont(QFont("Segoe UI", 9))
+            painter.setPen(QColor("#1E293B"))
+            painter.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
             painter.drawText(
                 int(x), int(ty + self.tube_h + 10),
                 int(self.tube_w), 22,
@@ -300,11 +300,11 @@ class PuzzleView(QWidget):
         painter.save()
         painter.setClipPath(tp)
 
-        # 1. Dark glass interior
+        # 1. White glass interior (empty space)
         bg = QLinearGradient(x, y, x + w, y)
-        bg.setColorAt(0.0, QColor(4,  4,  18, 200))
-        bg.setColorAt(0.5, QColor(12, 12, 35, 130))
-        bg.setColorAt(1.0, QColor(4,  4,  18, 200))
+        bg.setColorAt(0.0, QColor(245, 245, 250, 255))
+        bg.setColorAt(0.5, QColor(255, 255, 255, 255))
+        bg.setColorAt(1.0, QColor(245, 245, 250, 255))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QBrush(bg))
         painter.drawPath(tp)
@@ -370,7 +370,7 @@ class PuzzleView(QWidget):
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawPath(tp)
         else:
-            pen = QPen(QColor(160, 185, 255, 145), 2.5)
+            pen = QPen(QColor("#9CA3AF"), 2.5)
 
         pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
         pen.setCapStyle(Qt.PenCapStyle.RoundCap)
@@ -461,7 +461,7 @@ class PuzzleView(QWidget):
             cw = self.width()
             for i in range(n):
                 ys, ye = i * sh, (i + 1) * sh
-                painter.setPen(QColor("#9999cc"))
+                painter.setPen(QColor("#333333"))
                 painter.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
                 painter.drawText(0, ys + 10, cw, 30,
                                  Qt.AlignmentFlag.AlignHCenter,
@@ -473,7 +473,7 @@ class PuzzleView(QWidget):
                     ys + 40, ye
                 )
                 if i < n - 1:
-                    painter.setPen(QPen(QColor("#2a2a5a"), 1, Qt.PenStyle.DashLine))
+                    painter.setPen(QPen(QColor("#CCCCCC"), 1, Qt.PenStyle.DashLine))
                     painter.drawLine(50, ye, cw - 50, ye)
         else:
             self._draw_anim_state(
@@ -492,8 +492,8 @@ class PuzzleView(QWidget):
         ty       = ys + ((ye - ys) - self.tube_h) // 2
         p        = self.anim_progress   # 0 → 1 overall
 
-        lbl_color = QColor("#666699")
-        lbl_font  = QFont("Segoe UI", 9)
+        lbl_color = QColor("#1E293B")
+        lbl_font  = QFont("Segoe UI", 9, QFont.Weight.Bold)
 
         src_tube  = list(state_before[src])
         dst_tube  = list(state_before[dst])
@@ -697,9 +697,9 @@ class PuzzleView(QWidget):
 
         # Interior
         bg = QLinearGradient(x, y, x + w, y)
-        bg.setColorAt(0.0, QColor(4,  4,  18, 200))
-        bg.setColorAt(0.5, QColor(12, 12, 35, 130))
-        bg.setColorAt(1.0, QColor(4,  4,  18, 200))
+        bg.setColorAt(0.0, QColor(245, 245, 250, 255))
+        bg.setColorAt(0.5, QColor(255, 255, 255, 255))
+        bg.setColorAt(1.0, QColor(245, 245, 250, 255))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QBrush(bg))
         painter.drawPath(tp)
@@ -841,15 +841,15 @@ class View(QMainWindow):
         self.resize(1400, 900)
         self.showMaximized()
 
-        # Global dark palette
+        # Global white palette
         self.setStyleSheet(f"""
             QMainWindow  {{ background-color: {BG_COLOR}; }}
-            QWidget      {{ background-color: transparent; color: #ddddff; font-family: 'Segoe UI'; }}
+            QWidget      {{ background-color: transparent; color: #1E293B; font-family: 'Segoe UI'; }}
             QScrollBar:vertical {{
-                background: #11112a; width: 8px; border-radius: 4px; margin: 0;
+                background: #F1F5F9; width: 8px; border-radius: 4px; margin: 0;
             }}
             QScrollBar::handle:vertical {{
-                background: #2a2a6a; border-radius: 4px; min-height: 24px;
+                background: #CBD5E1; border-radius: 4px; min-height: 24px;
             }}
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
         """)
@@ -871,52 +871,40 @@ class View(QMainWindow):
     def _init_top_bar(self):
         COMBO_STYLE = f"""
             QComboBox {{
-                background-color: #54398c;
-                color: #ffffff;
-                border: 1.5px solid #7c5cb9;
-                border-radius: 8px;
-                padding: 5px 14px;
+                background-color: #FFFFFF;
+                color: #1E293B;
+                border: 1px solid #CBD5E1;
+                border-radius: 4px;
+                padding: 4px 10px;
                 font-size: 13px;
-                font-weight: bold;
                 min-width: 210px;
             }}
-            QComboBox::drop-down {{ border: none; width: 28px; }}
+            QComboBox::drop-down {{ border: none; width: 20px; }}
             QComboBox QAbstractItemView {{
-                background-color: #54398c;
-                color: #ffffff;
-                selection-background-color: #7c5cb9;
-                border: 1.5px solid #7c5cb9;
-                outline: none;
+                background-color: #FFFFFF;
+                color: #1E293B;
+                selection-background-color: #F1F5F9;
             }}
             QLabel {{
-                color: #d1c4e9;
-                font-size: 12px;
+                color: #1E293B;
+                font-size: 13px;
                 font-weight: bold;
             }}
         """
 
         self.top_frame = QFrame()
-        self.top_frame.setFixedHeight(62)
         self.top_frame.setStyleSheet(
-            f"QFrame {{ background-color: {PANEL_BG}; border-radius: 12px;"
-            f" border: 1px solid #5a3f95; }}" + COMBO_STYLE
+            f"QFrame {{ background-color: {PANEL_BG}; border-radius: 8px; border: 1px solid #94A3B8; }}" + COMBO_STYLE
         )
 
         lay = QHBoxLayout(self.top_frame)
-        lay.setContentsMargins(22, 0, 22, 0)
+        lay.setContentsMargins(15, 6, 15, 6)
         lay.setSpacing(14)
 
-        # Game title
-        title = QLabel("💧 Water Sort Puzzle")
-        title.setStyleSheet(
-            "font-size: 20px; font-weight: bold;"
-            f" color: {ACCENT_COLOR}; letter-spacing: 1px;"
-        )
-
-        lbl_cat  = QLabel("Loại thuật toán:")
+        lbl_cat  = QLabel("Chọn loại thuật toán:")
         self.combo_category = QComboBox()
 
-        lbl_algo = QLabel("Thuật toán:")
+        lbl_algo = QLabel("Chọn thuật toán:")
         self.combo_algo = QComboBox()
 
         self.lbl_turn  = QLabel("Lượt đầu:")
@@ -925,19 +913,17 @@ class View(QMainWindow):
         self.combo_turn.setFixedWidth(165)
         self.combo_turn.setStyleSheet("""
             QComboBox {
-                background-color: #54398c; color: #ffffff;
-                border: 1.5px solid #7c5cb9; border-radius: 8px;
-                padding: 5px 12px; font-size: 13px; font-weight: bold;
+                background-color: #FFFFFF; color: #1E293B;
+                border: 1px solid #CBD5E1; border-radius: 4px;
+                padding: 4px 10px; font-size: 13px;
             }
-            QComboBox::drop-down { border: none; }
+            QComboBox::drop-down { border: none; width: 20px; }
             QComboBox QAbstractItemView {
-                background-color: #54398c; color: #ffffff;
-                selection-background-color: #7c5cb9;
+                background-color: #FFFFFF; color: #1E293B;
+                selection-background-color: #F1F5F9;
             }
         """)
 
-        lay.addWidget(title)
-        lay.addStretch()
         lay.addWidget(lbl_cat)
         lay.addWidget(self.combo_category)
         lay.addSpacing(18)
@@ -961,17 +947,11 @@ class View(QMainWindow):
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setStyleSheet(f"""
             QScrollArea {{
-                background-color: {BG_COLOR};
-                border-radius: 12px;
-                border: 1px solid #5a3f95;
+                background-color: {PANEL_BG};
+                border-radius: 8px;
+                border: 1px solid #94A3B8;
             }}
         """)
-
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(22)
-        shadow.setColor(QColor(0, 240, 255, 45))   # Bright cyan glow
-        shadow.setOffset(0, 4)
-        self.scroll_area.setGraphicsEffect(shadow)
 
         self.puzzle_view = PuzzleView()
         self.puzzle_view.setObjectName("puzzle_view")
@@ -980,79 +960,59 @@ class View(QMainWindow):
 
         # ── Control panel ───────────────────────────────────────
         self.panel_frame = QFrame()
-        self.panel_frame.setFixedWidth(238)
+        self.panel_frame.setFixedWidth(280)
         self.panel_frame.setStyleSheet(f"""
             QFrame {{
                 background-color: {PANEL_BG};
-                border-radius: 14px;
-                border: 1px solid #5a3f95;
+                border-radius: 8px;
+                border: 1px solid #94A3B8;
             }}
         """)
-
-        ps = QGraphicsDropShadowEffect()
-        ps.setBlurRadius(24)
-        ps.setColor(QColor(0, 240, 255, 45))   # Bright cyan glow
-        ps.setOffset(0, 5)
-        self.panel_frame.setGraphicsEffect(ps)
 
         pl = QVBoxLayout(self.panel_frame)
         pl.setContentsMargins(16, 22, 16, 22)
         pl.setSpacing(11)
 
-        ptitle = QLabel("CONTROLS")
+        ptitle = QLabel("BẢNG ĐIỀU KHIỂN")
         ptitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         ptitle.setStyleSheet(f"""
-            font-size: 13px; font-weight: bold;
-            color: {ACCENT_COLOR}; letter-spacing: 3px; border: none;
+            font-size: 15px; font-weight: bold;
+            color: #1E293B; border: none;
         """)
         pl.addWidget(ptitle)
 
-        # Separator line
-        sep = QFrame()
-        sep.setFrameShape(QFrame.Shape.HLine)
-        sep.setStyleSheet("border: none; background-color: #1a3060; max-height: 1px;")
-        pl.addWidget(sep)
         pl.addSpacing(4)
 
-        def btn(text, top_c, bot_c, h_top="#2060a0", h_bot="#3090d0"):
+        def btn(text):
             b = QPushButton(text)
             b.setStyleSheet(f"""
                 QPushButton {{
-                    background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
-                        stop:0 {top_c}, stop:1 {bot_c});
-                    color: white;
+                    background-color: #78909C;
+                    color: #FFFFFF;
                     font-size: 14px;
                     font-weight: bold;
-                    border-radius: 10px;
-                    height: 46px;
+                    border-radius: 6px;
+                    height: 40px;
                     border: none;
                 }}
                 QPushButton:hover {{
-                    background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
-                        stop:0 {h_top}, stop:1 {h_bot});
+                    background-color: #90A4AE;
                 }}
                 QPushButton:pressed {{
-                    background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
-                        stop:0 {bot_c}, stop:1 {top_c});
+                    background-color: #607D8B;
                 }}
                 QPushButton:disabled {{
-                    background: #111130; color: #333355;
+                    background-color: #CFD8DC; color: #90A4AE;
                 }}
             """)
             return b
 
-        self.btn_start   = btn("⚡  Initial",
-                                "#0d3a6e", "#1565c0", "#1565c0", "#1e88e5")
-        self.btn_random  = btn("🎲  Random",
-                                "#0d5c2a", "#1b8a44", "#1b8a44", "#27b05a")
-        self.btn_execute = btn("▶  Execute",
-                                "#4a0080", "#8e24aa", "#8e24aa", "#ba52cd")
-        self.btn_next    = btn("⏭  Next",
-                                "#0d3560", "#1a5fa0", "#1a5fa0", "#2480cc")
-        self.btn_last    = btn("⏮  Back",
-                                "#0d3560", "#1a5fa0", "#1a5fa0", "#2480cc")
-        self.btn_remove  = btn("✕  Reset",
-                                "#6e0d0d", "#c0211a", "#c0211a", "#e53935")
+        self.btn_start   = btn("Initial")
+        self.btn_random  = btn("Random")
+        self.btn_execute = btn("Execute")
+        self.btn_next    = btn("Next")
+        self.btn_last    = btn("Back")
+        self.btn_remove  = btn("Remove")
 
         for b in (self.btn_start, self.btn_random, self.btn_execute,
                   self.btn_next, self.btn_last, self.btn_remove):
@@ -1066,25 +1026,27 @@ class View(QMainWindow):
 
     def _init_bottom_bar(self):
         self.bottom_frame = QFrame()
-        self.bottom_frame.setFixedHeight(72)
+        self.bottom_frame.setMinimumHeight(75)
         self.bottom_frame.setStyleSheet(f"""
             QFrame {{
                 background-color: {PANEL_BG};
-                border-radius: 12px;
-                border: 1px solid #5a3f95;
+                border-radius: 8px;
+                border: 1px solid #94A3B8;
             }}
-            QLabel {{ color: #d1c4e9; font-size: 12px; }}
+            QLabel {{ 
+                color: #1E293B; 
+                font-size: 13px; 
+                border: 1px solid #94A3B8; 
+                border-radius: 4px; 
+                padding: 4px;
+                background-color: #F8FAFC;
+            }}
         """)
-
-        bs = QGraphicsDropShadowEffect()
-        bs.setBlurRadius(18)
-        bs.setColor(QColor(0, 0, 0, 50))
-        bs.setOffset(0, -3)
-        self.bottom_frame.setGraphicsEffect(bs)
 
         lay = QGridLayout(self.bottom_frame)
         lay.setContentsMargins(20, 8, 20, 8)
         lay.setHorizontalSpacing(28)
+        lay.setRowStretch(2, 1)
 
         self.lbl_path = QLabel(f"<b style='color:{ACCENT_COLOR}'>Path:</b> ")
         self.lbl_path.setWordWrap(True)
@@ -1123,12 +1085,12 @@ class View(QMainWindow):
             return
 
         ac = ACCENT_COLOR
-        wc = "#ddeeff"   # value color
+        wc = "#000000"   # value color
 
         def f(label, val):
             return f"<b style='color:{ac}'>{label}:</b> <span style='color:{wc}'>{val}</span>"
 
-        ok_txt = "✅ Yes" if result.success else "❌ No"
+        ok_txt = "True" if result.success else "False"
         self.lbl_success.setText(  f(  "Success",   ok_txt))
         self.lbl_cost.setText(     f(     "Cost",   result.cost))
         self.lbl_explored.setText( f( "Explored",   result.explored))
@@ -1136,10 +1098,10 @@ class View(QMainWindow):
         self.lbl_depth.setText(    f(    "Depth",   result.depth))
         self.lbl_runtime.setText(  f(  "Runtime",   f"{result.runtime:.4f}s"))
 
-        path_str = " → ".join(str(p) for p in result.path) if result.path else "None"
+        path_str = " -> ".join(str(p) for p in result.path) if result.path else "None"
         self.lbl_path.setText(
             f"<b style='color:{ac}'>Path:</b>"
-            f" <span style='color:#aabbdd'>{path_str}</span>"
+            f" <span style='color:{wc}'>{path_str}</span>"
         )
 
     def show_step_info(self, step, total, action=None):
@@ -1162,12 +1124,12 @@ class View(QMainWindow):
         self.btn_last.hide()
         self.btn_remove.hide()
         self.lbl_path.hide()
-        self.lbl_explored.hide()
-        self.lbl_generated.hide()
+        self.lbl_explored.show()
+        self.lbl_generated.show()
         self.lbl_depth.hide()
-        self.lbl_runtime.hide()
+        self.lbl_runtime.show()
         ac = ACCENT_COLOR
-        self.lbl_success.setText(f"<b style='color:{ac}'>Turn:</b> <span style='color:#ddeeff'>Human</span>")
+        self.lbl_success.setText(f"<b style='color:{ac}'>Turn:</b> <span style='color:#000000'>Human</span>")
         self.lbl_cost.setText(   f"<b style='color:{ac}'>Result:</b> ")
 
     def hide_adversarial_ui(self):
@@ -1184,14 +1146,24 @@ class View(QMainWindow):
         self.lbl_runtime.show()
         self.clear_result_fields()
 
-    def update_adv_bottom(self, turn, result=""):
+    def update_adv_bottom(self, turn, result_text="", alg_result=None):
         ac = ACCENT_COLOR
+        wc = "#1E293B"
         self.lbl_success.setText(
-            f"<b style='color:{ac}'>Turn:</b> <span style='color:#ddeeff'>{turn}</span>"
+            f"<b style='color:{ac}'>Turn:</b> <span style='color:{wc}'>{turn}</span>"
         )
-        if result:
+        if result_text:
             self.lbl_cost.setText(
-                f"<b style='color:{ac}'>Result:</b> <span style='color:#ddeeff'>{result}</span>"
+                f"<b style='color:{ac}'>Result:</b> <span style='color:{wc}'>{result_text}</span>"
             )
         else:
             self.lbl_cost.setText(f"<b style='color:{ac}'>Result:</b> ")
+            
+        if alg_result:
+            self.lbl_explored.setText(f"<b style='color:{ac}'>Explored:</b> <span style='color:{wc}'>{alg_result.explored}</span>")
+            self.lbl_generated.setText(f"<b style='color:{ac}'>Generated:</b> <span style='color:{wc}'>{alg_result.generated}</span>")
+            self.lbl_runtime.setText(f"<b style='color:{ac}'>Runtime:</b> <span style='color:{wc}'>{alg_result.runtime:.4f}s</span>")
+        else:
+            self.lbl_explored.setText(f"<b style='color:{ac}'>Explored:</b>")
+            self.lbl_generated.setText(f"<b style='color:{ac}'>Generated:</b>")
+            self.lbl_runtime.setText(f"<b style='color:{ac}'>Runtime:</b>")
