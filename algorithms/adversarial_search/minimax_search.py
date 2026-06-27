@@ -2,31 +2,45 @@ from Core.Node import *
 from Core.Action import *
 from Core.Utils import *
 from Core.Result import *
+import time
 
 
 def minimax_search(node, maximizing_player):
-    actions = get_actions(node.state)
-    if is_goal(node.state):
-        if maximizing_player:  # toi luot may -> May thua
-            return -1
-        else:  # toi luot nguoi -> May thang
-            return 1
+    explored = 0
+    generated = 1
+    start_time = time.time()
 
-    elif len(actions) == 0 or node.is_cycle():  # Hoa
-        return 0
+    def MS(node, maximizing_player):
+        nonlocal explored, generated
+        explored += 1
 
-    if maximizing_player:  # True: May di
-        max_eval = -1
-        for action in actions:
-            child = node.expand(action)
-            eval = minimax_search(child, False)
-            max_eval = max(max_eval, eval)
-        return max_eval
+        actions = get_actions(node.state)
+        if is_goal(node.state):
+            if maximizing_player: # Lượt máy, máy thua
+                return -1
+            else: # Lượt người, máy thắng
+                return 1
 
-    else:  # False: Nguoi di
-        min_eval = 1
-        for action in actions:
-            child = node.expand(action)
-            eval = minimax_search(child, True)
-            min_eval = min(min_eval, eval)
-        return min_eval
+        elif len(actions) == 0 or node.is_cycle():
+            return 0
+
+        if maximizing_player:
+            max_eval = -1
+            for action in actions:
+                child = node.expand(action)
+                generated += 1
+                eval = MS(child, False)
+                max_eval = max(max_eval, eval)
+            return max_eval
+
+        else:
+            min_eval = 1
+            for action in actions:
+                child = node.expand(action)
+                generated += 1
+                eval = MS(child, True)
+                min_eval = min(min_eval, eval)
+            return min_eval
+
+    score = MS(node, maximizing_player)
+    return score, solution(None, explored, generated, start_time)

@@ -18,11 +18,18 @@ class Result:
     runtime: float = 0                   # Thời gian chạy
 
 def solution(node, explored, generated, start_time):
-    if isinstance(node, Node):
+    if node is None:
+        return Result(
+            explored=explored,
+            generated=generated,
+            runtime=time.time() - start_time,
+        )
+
+    elif isinstance(node, Node):
         return Result(
             success=is_goal(node.get_state()),
             path=node.get_path(),
-            states= node.get_states(),
+            states=node.get_states(),
             last_state=node.get_state(),
             cost=node.get_cost(),
             explored=explored,
