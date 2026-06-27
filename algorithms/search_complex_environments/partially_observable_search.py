@@ -143,7 +143,7 @@ def belief_a_star_search(initial_state, known_colors, max_expanded=100000):
 
     return solution(nodes, expanded_nodes * MAX_BELIEF_STATES, generated_nodes * MAX_BELIEF_STATES, start_time)
 
-def partial_search(start):
+def partially_observable_search(start):
     known_colors = [1, 1, 1, 1,
                 2, 2, 2, 2,
                 3, 3, 3, 3

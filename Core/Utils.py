@@ -79,10 +79,6 @@ def is_goal(state):
             return False
     return True
 
-from Core.Cost import heuristic
-from Core.Action import get_actions
-
-
 # Chuyển trạng thái từ list sang tuple
 def state_to_tuple(state):
     return tuple(tuple(row) for row in state)
