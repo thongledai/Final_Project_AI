@@ -837,7 +837,7 @@ class View(QMainWindow):
         super().__init__()
         self.controller = controller
 
-        self.setWindowTitle("💧 Water Sort Puzzle — AI Solver")
+        self.setWindowTitle("Water Sort Puzzle")
         self.resize(1400, 900)
         self.showMaximized()
 
