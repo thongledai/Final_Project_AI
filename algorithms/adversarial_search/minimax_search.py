@@ -4,26 +4,42 @@ from Core.Utils import *
 from Core.Result import *
 import time
 
-
 def minimax_search(node, maximizing_player=True):
     if isinstance(node, list):
         node = Node(node)
+    
+
     explored = 0
     generated = 1
     start_time = time.time()
 
+    final_node = node
+    is_last_node = True
+    def save_final_node(node):
+        nonlocal final_node, is_last_node
+
+        if is_last_node:
+            final_node = node
+            is_last_node = False
+
     def MS(node, maximizing_player):
         nonlocal explored, generated
+        nonlocal final_node, is_last_node
+
         explored += 1
 
         actions = get_actions(node.state)
         if is_goal(node.state):
             if maximizing_player: # Lượt máy, máy thua
+                save_final_node(node)
                 return -1
             else: # Lượt người, máy thắng
+                save_final_node(node)
                 return 1
+            
 
         elif len(actions) == 0 or node.is_cycle():
+            save_final_node(node)
             return 0
 
         if maximizing_player:
@@ -45,4 +61,4 @@ def minimax_search(node, maximizing_player=True):
             return min_eval
 
     score = MS(node, maximizing_player)
-    return score, solution(None, explored, generated, start_time)
+    return score, solution(final_node, explored, generated, start_time)

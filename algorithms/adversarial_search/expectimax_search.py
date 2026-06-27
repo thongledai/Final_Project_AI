@@ -12,6 +12,16 @@ def expectimax_search(node, maximizing_player=True):
     generated = 1
     start_time = time.time()
 
+
+    final_node = node
+    is_last_node = True
+    def save_final_node(node):
+        nonlocal final_node, is_last_node
+
+        if is_last_node:
+            final_node = node
+            is_last_node = False
+
     def ES(node, maximizing_player):
         nonlocal explored, generated
         explored += 1
@@ -19,11 +29,14 @@ def expectimax_search(node, maximizing_player=True):
         actions = get_actions(node.state)
         if is_goal(node.state):
             if maximizing_player:  # toi luot may -> May thua
+                save_final_node(node)
                 return -1
             else:  # toi luot nguoi -> May thang
+                save_final_node(node)
                 return 1
 
         elif len(actions) == 0 or node.is_cycle():  # Hoa
+            save_final_node(node)
             return 0
 
         if maximizing_player:  # True: May di
@@ -45,4 +58,4 @@ def expectimax_search(node, maximizing_player=True):
             return chance_eval / len(actions)
 
     score = ES(node, maximizing_player)
-    return score, solution(None, explored, generated, start_time)
+    return score, solution(final_node, explored, generated, start_time)
