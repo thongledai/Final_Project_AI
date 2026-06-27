@@ -103,24 +103,26 @@ def belief_a_star_search(initial_state, known_colors, max_expanded=100000):
         explored.add(key)
         expanded_nodes += 1
 
-        # Get all actions of all the states
-        all_actions = set()
+        # Get actions that are valid in ALL belief states
+        all_actions = None
         for n in nodes:
-            for action in get_actions(n.state):
-                all_actions.add(action)
+            actions_for_n = set(get_actions(n.state))
+            if all_actions is None:
+                all_actions = actions_for_n
+            else:
+                all_actions = all_actions.intersection(actions_for_n)
+
+        if all_actions is None:
+            all_actions = set()
 
         for action in all_actions:
             next_nodes   = []
             action_cost  = 0   # cost sau khi expand
 
             for n in nodes:
-                actions_for_n = list(get_actions(n.state))
-                if action in actions_for_n:
-                    child = n.expand(action, "f(x)")
-                    next_nodes.append(child)
-                    action_cost += child.get_cost()
-                else:
-                    next_nodes.append(n)
+                child = n.expand(action, "f(x)")
+                next_nodes.append(child)
+                action_cost += child.get_cost()
 
             # Nếu không node nào apply được → bỏ action này
             if action_cost == 0:
