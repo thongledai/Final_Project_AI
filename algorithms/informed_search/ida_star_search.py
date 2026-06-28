@@ -37,7 +37,10 @@ def ida_star_search(START):
         for action in get_actions(node.state):
             child = node.expand(action, "f(x)")
             generated_nodes += 1
-            result, found_node,explored_nodes,generated_nodes = dfs(child, limit)
+            result, found_node, child_explored, child_generated = dfs(child, limit)
+
+            explored_nodes += child_explored
+            generated_nodes += child_generated
 
             if result is FOUND:
                 return FOUND, found_node,explored_nodes,generated_nodes
