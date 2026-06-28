@@ -151,8 +151,6 @@ def run_tests(input_file: str, output_file: str, timeout: float, verbose: bool):
 
     rows = []
     for tc_id, state in enumerate(test_cases, 1):
-        if verbose:
-            print(f"[TC {tc_id:>3}] {state}")
 
         for name, func in ALGORITHMS:
             t0 = time.perf_counter()
@@ -166,22 +164,7 @@ def run_tests(input_file: str, output_file: str, timeout: float, verbose: bool):
             if result is not None and getattr(result, "runtime", 0) == 0:
                 result.runtime = elapsed
 
-            if verbose:
-                if error:
-                    status = f"{'ERROR':<6} {error}"
-                elif result and result.success:
-                    status = (f"{'OK':<6} depth={result.depth:<4} "
-                              f"explored={result.explored:<6} "
-                              f"generated={result.generated:<6} "
-                              f"t={result.runtime:.4f}s")
-                else:
-                    status = f"{'FAIL':<6} t={elapsed:.4f}s"
-                print(f"  [{name:<20}] {status}")
-
             rows.append(to_row(tc_id, state, name, result, error))
-
-        if verbose:
-            print()
 
     out = Path(output_file)
     out.parent.mkdir(parents=True, exist_ok=True)
