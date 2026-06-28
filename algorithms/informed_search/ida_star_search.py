@@ -14,39 +14,40 @@ def ida_star_search(START):
     generated_nodes = 1
 
     def dfs(node, limit):
-        nonlocal explored_nodes, generated_nodes
+        explored_nodes=0
+        generated_nodes=1
 
-        f = node.cost + heuristic(node.state)
+        f = node.cost 
 
         if f > limit:
-            return f, None
+            return f, None, explored_nodes,generated_nodes
 
         if is_goal(node.state):
-            return FOUND, node
+            return FOUND, node, explored_nodes,generated_nodes
 
         if node.is_cycle():
-            return float("inf"), None
+            return float("inf"), None,explored_nodes,generated_nodes
 
         if node.get_depth() >= MAX_STEPS:
-            return float("inf"), None
+            return float("inf"), None,explored_nodes,generated_nodes
 
         explored_nodes += 1
         next_limit = float("inf")
 
         for action in get_actions(node.state):
-            child = node.expand(action, "g(x)")
+            child = node.expand(action, "f(x)")
             generated_nodes += 1
-            result, found_node = dfs(child, limit)
+            result, found_node,explored_nodes,generated_nodes = dfs(child, limit)
 
             if result is FOUND:
-                return FOUND, found_node
+                return FOUND, found_node,explored_nodes,generated_nodes
 
             next_limit = min(next_limit, result)
 
-        return next_limit, None
+        return next_limit, None,explored_nodes,generated_nodes
 
     while bound < float("inf"):
-        result, found_node = dfs(start, bound)
+        result, found_node,explored_nodes,generated_nodes = dfs(start, bound)
         if result is FOUND:
             return solution(found_node, explored_nodes, generated_nodes, start_time)
         bound = result
