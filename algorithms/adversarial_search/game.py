@@ -69,8 +69,8 @@ class GameController:
         max_eval = -2
         best_action = actions[0]
         
-        total_explored = 0
-        total_generated = 1
+        total_explored = 1   # đếm root node (self.node) đang được xét
+        total_generated = len(actions)  # N node con trực tiếp của root được tạo ra ở đây
 
         for action in actions:
             child = self.node.expand(action)
