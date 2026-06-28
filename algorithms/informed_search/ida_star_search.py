@@ -10,11 +10,11 @@ def ida_star_search(START):
     start_time = time.time()
     start = Node(START)
     bound = heuristic(START)
-    expanded_nodes = 0
+    explored_nodes = 0
     generated_nodes = 1
 
     def dfs(node, limit):
-        nonlocal expanded_nodes, generated_nodes
+        nonlocal explored_nodes, generated_nodes
 
         f = node.cost + heuristic(node.state)
 
@@ -30,7 +30,7 @@ def ida_star_search(START):
         if node.get_depth() >= MAX_STEPS:
             return float("inf"), None
 
-        expanded_nodes += 1
+        explored_nodes += 1
         next_limit = float("inf")
 
         for action in get_actions(node.state):
@@ -48,7 +48,7 @@ def ida_star_search(START):
     while bound < float("inf"):
         result, found_node = dfs(start, bound)
         if result is FOUND:
-            return solution(found_node, expanded_nodes, generated_nodes, start_time)
+            return solution(found_node, explored_nodes, generated_nodes, start_time)
         bound = result
 
-    return solution(start, expanded_nodes, generated_nodes, start_time)
+    return solution(start, explored_nodes, generated_nodes, start_time)

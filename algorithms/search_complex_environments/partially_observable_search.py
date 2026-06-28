@@ -89,19 +89,19 @@ def belief_a_star_search(initial_state, known_colors, max_expanded=100000):
     best_cost = {belief_key(nodes): g0}
     explored   = set()
 
-    expanded_nodes  = 0
+    explored_nodes  = 0
     generated_nodes = 1
 
-    while frontier and expanded_nodes < max_expanded:
+    while frontier and explored_nodes < max_expanded:
         _,_,_, nodes = heapq.heappop(frontier)
         key = belief_key(nodes)
 
         # Goal: TẤT CẢ states phải là goal
         if belief_is_goal(nodes):
-            return solution(nodes, expanded_nodes, generated_nodes, start_time)
+            return solution(nodes, explored_nodes, generated_nodes, start_time)
 
         explored.add(key)
-        expanded_nodes += 1
+        explored_nodes += 1
 
         # Get actions that are valid in ALL belief states
         all_actions = None
@@ -143,7 +143,7 @@ def belief_a_star_search(initial_state, known_colors, max_expanded=100000):
             heapq.heappush(frontier, (priority, new_cost, next(counter), next_nodes))
             generated_nodes += 1
 
-    return solution(nodes, expanded_nodes * MAX_BELIEF_STATES, generated_nodes * MAX_BELIEF_STATES, start_time)
+    return solution(nodes, explored_nodes * MAX_BELIEF_STATES, generated_nodes * MAX_BELIEF_STATES, start_time)
 
 def partially_observable_search(start):
     known_colors = [1, 1, 1, 1,

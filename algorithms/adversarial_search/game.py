@@ -70,7 +70,7 @@ class GameController:
         best_action = actions[0]
         
         total_explored = 0
-        total_generated = 1
+        total_generated = 0
 
         for action in actions:
             child = self.node.expand(action)

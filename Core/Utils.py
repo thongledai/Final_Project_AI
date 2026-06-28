@@ -7,11 +7,9 @@ QUANTITY = 4
 # Số trạng thái tối đa
 MAX_STEPS = 1000
 
-
-
-START = [[1, 3, 2, 2],      # lọ 0
-         [3, 2, 1, 3],      # lọ 1
-         [1, 3, 2, 1],      # lọ 2
+START = [[1, 1, 2, 2],      # lọ 0
+         [3, 3, 3, 1],      # lọ 1
+         [2, 2, 1, 3],      # lọ 2
          [          ]]      # lọ 3
 
 # Trạng thái ban đầu random

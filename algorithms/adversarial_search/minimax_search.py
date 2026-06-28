@@ -12,9 +12,9 @@ def minimax_search(node, maximizing_player=True):
     explored = 0
     generated = 1
     start_time = time.time()
-
     final_node = node
     is_last_node = True
+
     def save_final_node(node):
         nonlocal final_node, is_last_node
 

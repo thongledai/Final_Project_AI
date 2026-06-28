@@ -11,17 +11,17 @@ def simulated_annealing_search(initial_state, start_temperature=10.0, cooling_ra
     start_time = time.time()
     current = Node(initial_state, cost=heuristic(initial_state))
     best = current
-    expanded_nodes = 0
+    explored_nodes = 0
     generated_nodes = 1
     temperature = start_temperature
     visited = {state_to_tuple(initial_state)}
 
     for _ in range(MAX_STEPS):
         if is_goal(current.state):
-            return solution(current, expanded_nodes, generated_nodes, start_time)
+            return solution(current, explored_nodes, generated_nodes, start_time)
 
         children = child_nodes(current)
-        expanded_nodes += 1
+        explored_nodes += 1
         generated_nodes += len(children)
 
         valid_children = [child for child in children if state_to_tuple(child.state) not in visited]
@@ -48,7 +48,7 @@ def simulated_annealing_search(initial_state, start_temperature=10.0, cooling_ra
 
     # Trả về node tốt nhất tìm được
     if is_goal(best.state):
-        return solution(best, expanded_nodes, generated_nodes, start_time)
-    return solution(best, expanded_nodes, generated_nodes, start_time)
+        return solution(best, explored_nodes, generated_nodes, start_time)
+    return solution(best, explored_nodes, generated_nodes, start_time)
 
 

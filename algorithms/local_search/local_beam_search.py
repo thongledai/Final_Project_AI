@@ -9,7 +9,7 @@ from Core.Utils import *
 def local_beam_search(initial_state, beam_width=3, max_steps=1000):
     start_time = time.time()
     current_set = [Node(initial_state, cost=heuristic(initial_state))]
-    expanded_nodes = 0
+    explored_nodes = 0
     generated_nodes = 1
     visited = {state_to_tuple(initial_state)}
 
@@ -19,7 +19,7 @@ def local_beam_search(initial_state, beam_width=3, max_steps=1000):
         for state in current_set:
             children = child_nodes(state)
             
-            expanded_nodes += 1
+            explored_nodes += 1
             generated_nodes += len(children)
             
             for child in children:
@@ -29,7 +29,7 @@ def local_beam_search(initial_state, beam_width=3, max_steps=1000):
 
         for neighbor in neighbor_states:
             if is_goal(neighbor.state):
-                return solution(neighbor, expanded_nodes, generated_nodes, start_time)
+                return solution(neighbor, explored_nodes, generated_nodes, start_time)
 
         if not neighbor_states:
             break
@@ -42,4 +42,4 @@ def local_beam_search(initial_state, beam_width=3, max_steps=1000):
         key=lambda state: state.cost,
         default=Node(initial_state, cost=heuristic(initial_state)),
     )
-    return solution(current, expanded_nodes, generated_nodes, start_time)
+    return solution(current, explored_nodes, generated_nodes, start_time)
