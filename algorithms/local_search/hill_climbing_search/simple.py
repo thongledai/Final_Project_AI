@@ -22,7 +22,7 @@ def simple_hill_climbing(START):
             generated_nodes += 1
 
 
-            if child.get_cost() <= current.get_cost():
+            if child.get_cost() < current.get_cost():
                 next_node = child
                 break
 
