@@ -10,7 +10,6 @@ def simple_hill_climbing(START):
     current = Node(START, cost=heuristic(START))
     explored_nodes = 0
     generated_nodes = 1
-    visited = {state_to_tuple(START)}
 
     for _ in range(MAX_STEPS):
         if is_goal(current.state):
@@ -21,8 +20,7 @@ def simple_hill_climbing(START):
         children = child_nodes(current)
         for child in children:         
             generated_nodes += 1
-            if state_to_tuple(child.state) in visited:
-                continue
+
 
             if child.get_cost() <= current.get_cost():
                 next_node = child
@@ -31,6 +29,5 @@ def simple_hill_climbing(START):
         if next_node is None:
             break
         current = next_node
-        visited.add(state_to_tuple(current.state))
 
     return solution(current, explored_nodes, generated_nodes, start_time)
