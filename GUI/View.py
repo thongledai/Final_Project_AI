@@ -1010,11 +1010,16 @@ class View(QMainWindow):
         self.btn_start   = btn("Initial")
         self.btn_random  = btn("Random")
         self.btn_execute = btn("Execute")
+        self.btn_auto    = btn("Auto")
+        self.btn_pause   = btn("Pause")
         self.btn_next    = btn("Next")
         self.btn_last    = btn("Back")
         self.btn_remove  = btn("Remove")
 
+        self.btn_pause.setEnabled(False)
+
         for b in (self.btn_start, self.btn_random, self.btn_execute,
+                  self.btn_auto, self.btn_pause,
                   self.btn_next, self.btn_last, self.btn_remove):
             pl.addWidget(b)
 
@@ -1125,6 +1130,8 @@ class View(QMainWindow):
         self.lbl_turn.show()
         self.combo_turn.show()
         self.btn_execute.hide()
+        self.btn_auto.hide()
+        self.btn_pause.hide()
         self.btn_next.hide()
         self.btn_last.hide()
         self.btn_remove.hide()
@@ -1142,6 +1149,8 @@ class View(QMainWindow):
         self.lbl_turn.hide()
         self.combo_turn.hide()
         self.btn_execute.show()
+        self.btn_auto.show()
+        self.btn_pause.show()
         self.btn_next.show()
         self.btn_last.show()
         self.btn_remove.show()

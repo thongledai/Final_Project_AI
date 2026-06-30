@@ -110,6 +110,7 @@ class Controller:
         self.view = View(self)
 
         self.worker = None
+        self.is_auto = False
 
         self._setup_combos()
         self._bind_events()
@@ -139,6 +140,8 @@ class Controller:
         self.view.btn_start.clicked.connect(self._on_default)
         self.view.btn_random.clicked.connect(self._on_random)
         self.view.btn_execute.clicked.connect(self._on_execute)
+        self.view.btn_auto.clicked.connect(self._on_auto)
+        self.view.btn_pause.clicked.connect(self._on_pause)
         self.view.btn_next.clicked.connect(self._on_next)
         self.view.btn_last.clicked.connect(self._on_last)
         self.view.btn_remove.clicked.connect(self._on_remove)
@@ -211,6 +214,7 @@ class Controller:
     # ══════════════════════════════════════
 
     def _on_default(self):
+        self._stop_auto()
         self.model.set_default_start()
         if self.model.mode == "partial":
             self._setup_partial_state()
@@ -222,6 +226,7 @@ class Controller:
             self._start_adversarial_game()
 
     def _on_random(self):
+        self._stop_auto()
         self.model.set_random_start()
         if self.model.mode == "partial":
             self._setup_partial_state()
@@ -253,6 +258,7 @@ class Controller:
         self.model.current_state = copy_state(self.model.start_state)
 
     def _on_execute(self):
+        self._stop_auto()
         if self.model.algorithm_func is None:
             self.view.lbl_success.setText("Success: Chưa chọn thuật toán")
             return
@@ -279,7 +285,54 @@ class Controller:
         else:
             self.view.lbl_success.setText("Success: Lỗi khi chạy thuật toán")
 
+    def _on_auto(self):
+        if self.model.result is None:
+            return
+        if self.is_auto:
+            return
+        self.is_auto = True
+        self.view.btn_auto.setEnabled(False)
+        self.view.btn_pause.setEnabled(True)
+        self._trigger_auto_next()
+
+    def _on_pause(self):
+        self._stop_auto()
+
+    def _stop_auto(self):
+        self.is_auto = False
+        self.view.btn_auto.setEnabled(True)
+        self.view.btn_pause.setEnabled(False)
+
+    def _trigger_auto_next(self):
+        if not self.is_auto:
+            return
+
+        total = self.model.get_total_steps()
+        if self.model.current_step >= total:
+            self._stop_auto()
+            return
+
+        state_before = self.model.get_current_display_state()
+        self.model.current_step += 1
+        state_after = self.model.get_current_display_state()
+        action = self.model.get_current_action()
+
+        self.view.show_step_info(self.model.current_step, total, action)
+
+        def after_anim_auto():
+            self._draw_current()
+            if self.is_auto:
+                QTimer.singleShot(500, self._trigger_auto_next)
+
+        if action is None:
+            self._draw_current()
+            if self.is_auto:
+                QTimer.singleShot(500, self._trigger_auto_next)
+        else:
+            self.view.animate_pour(state_before, state_after, action, after_anim_auto)
+
     def _on_next(self):
+        self._stop_auto()
         if self.model.result is None or self.view.puzzle_view.is_animating:
             return
 
@@ -303,6 +356,7 @@ class Controller:
             self.view.animate_pour(state_before, state_after, action, after_anim)
 
     def _on_last(self):
+        self._stop_auto()
         if self.model.result is None or self.view.puzzle_view.is_animating:
             return
 
@@ -316,6 +370,7 @@ class Controller:
         self._draw_current()
 
     def _on_remove(self):
+        self._stop_auto()
         self.model.result = None
         self.model.current_step = 0
         self.view.clear_result_fields()
