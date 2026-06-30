@@ -22,7 +22,6 @@ def local_beam_search(initial_state, beam_width=3, max_steps=1000):
             generated_nodes += len(children)
             
             for child in children:
-                if state_to_tuple(child.state) :
                     neighbor_states.append(child)
                     
         for neighbor in neighbor_states:
