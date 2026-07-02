@@ -6,15 +6,15 @@ Water Sort Puzzle — AI Solver
 
 ## Mục lục
 
-1. [Giới thiệu](#-giới-thiệu)
-2. [Giao diện & Demo](#-giao-diện--demo)
-3. [Phát biểu bài toán](#-phát-biểu-bài-toán)
-4. [Hệ thống thuật toán](#-hệ-thống-thuật-toán)
-5. [Kiến trúc dự án](#-kiến-trúc-dự-án)
-6. [Cài đặt & Chạy](#-cài-đặt--chạy)
-7. [Hướng dẫn sử dụng](#-hướng-dẫn-sử-dụng)
-8. [Kết quả thực nghiệm](#-kết-quả-thực-nghiệm)
-9. [Hướng phát triển](#-hướng-phát-triển)
+1. [Giới thiệu](#giới-thiệu)
+2. [Giao diện & Demo](#giao-diện--demo)
+3. [Phát biểu bài toán](#phát-biểu-bài-toán)
+4. [Hệ thống thuật toán](#hệ-thống-thuật-toán)
+5. [Kiến trúc dự án](#kiến-trúc-dự-án)
+6. [Cài đặt & Chạy](#cài-đặt--chạy)
+7. [Hướng dẫn sử dụng](#hướng-dẫn-sử-dụng)
+8. [Kết quả thực nghiệm](#kết-quả-thực-nghiệm)
+9. [Hướng phát triển](#hướng-phát-triển)
 
 ---
 
@@ -22,9 +22,9 @@ Water Sort Puzzle — AI Solver
 
 **Water Sort Puzzle — AI Solver** là trò chơi logic phân loại nước màu. Dự án này là **Đồ án môn học Trí tuệ Nhân tạo** do nhóm thực hiện. Nhóm đã biến bài toán này thành **môi trường thử nghiệm và mô phỏng trực quan thuật toán AI** nhằm:
 
-- Quan sát **trực quan** cách từng thuật toán tìm kiếm lời giải thông qua hoạt ảnh (animation) sinh động.
-- So sánh **hiệu năng** thực tế giữa các thuật toán (số lượng node đã duyệt, node được sinh ra, độ sâu lời giải và thời gian chạy).
-- Đánh giá chi tiết **ưu và nhược điểm** của từng phương pháp tìm kiếm trên cùng một bài toán cụ thể.
+- Quan sát trực quan cách từng thuật toán tìm kiếm lời giải thông qua hoạt ảnh sinh động.
+- So sánh hiệu năng thực tế giữa các thuật toán (số lượng node đã duyệt, node được sinh ra, độ sâu lời giải và thời gian chạy).
+- Đánh giá chi tiết ưu và nhược điểm của từng phương pháp tìm kiếm trên cùng một bài toán cụ thể.
 
 ### Công nghệ sử dụng
 
@@ -372,11 +372,12 @@ Lời giải tối ưu: 9 bước
 
 ## Hướng phát triển trong tương lai
 
-- [ ] Mở rộng lên 6-8 màu và 8-10 ống
-- [ ] Tự động **sinh trạng thái có lời giải** với độ khó tùy chọn
-- [ ] Giao diện **Web** (FastAPI + React)
-- [ ] So sánh với thuật toán **Q-Learning / Deep RL**
+Mở rộng lên 6-8 màu và 8-10 ống
+Tự động sinh trạng thái có lời giải với độ khó tùy chọn
+Giao diện Web (FastAPI + React)
+So sánh với thuật toán Q-Learning / Deep RL
 
 ---
 
-Đây là sản phẩm đồ án môn học **Trí tuệ Nhân tạo** do nhóm  tự nghiên cứu, thiết kế giao diện và cài đặt thuật toán. Các thuật toán được triển khai dựa trên tài liệu chuẩn cuốn sách *Artificial Intelligence: A Modern Approach* (Russell & Norvig) và được minh họa thực nghiệm trên trò chơi Water Sort Puzzle. Hy vọng dự án nhỏ này của nhóm sẽ mang lại những góc nhìn trực quan và thú vị về các thuật toán tìm kiếm!
+Đây là sản phẩm đồ án môn học Trí tuệ Nhân tạo do nhóm nghiên cứu, thiết kế giao diện và cài đặt thuật toán. Các thuật toán được triển khai dựa trên tài liệu chuẩn cuốn sách Artificial Intelligence: A Modern Approach (Russell & Norvig) và được minh họa thực nghiệm trên trò chơi Water Sort Puzzle. 
+Hy vọng dự án nhỏ này của nhóm sẽ mang lại những góc nhìn trực quan và thú vị về các thuật toán tìm kiếm!
