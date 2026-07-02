@@ -1,10 +1,10 @@
-# 🧪 Water Sort Puzzle — AI Solver
+Water Sort Puzzle — AI Solver
 
-> Dự án triển khai **19 thuật toán Trí tuệ Nhân tạo** để giải bài toán Water Sort Puzzle, kèm giao diện đồ họa tương tác được xây dựng bằng **Python + PyQt6**.
+> Dự án triển khai 19 thuật toán Trí tuệ Nhân tạo để giải bài toán Water Sort Puzzle, kèm giao diện đồ họa tương tác được xây dựng bằng Python + PyQt6.
 
 ---
 
-## 📋 Mục lục
+## Mục lục
 
 1. [Giới thiệu](#-giới-thiệu)
 2. [Giao diện & Demo](#-giao-diện--demo)
@@ -18,7 +18,7 @@
 
 ---
 
-## 🎯 Giới thiệu
+## Giới thiệu
 
 **Water Sort Puzzle — AI Solver** là trò chơi logic phân loại nước màu. Dự án này là **Đồ án môn học Trí tuệ Nhân tạo** do nhóm thực hiện. Nhóm đã biến bài toán này thành **môi trường thử nghiệm và mô phỏng trực quan thuật toán AI** nhằm:
 
@@ -37,7 +37,7 @@
 
 ---
 
-## 🖥️ Giao diện & Demo
+## Giao diện & Demo
 
 ### Tổng quan hiệu năng thuật toán
 
@@ -61,7 +61,7 @@
 
 ---
 
-## 📐 Phát biểu bài toán
+## Phát biểu bài toán
 
 ### Biểu diễn trạng thái (State Representation)
 
@@ -159,7 +159,7 @@ Tìm kiếm từ trạng thái hiện tại, không duy trì đường đi đầ
 | **Local Beam Search** | `local_beam_search.py` | Duy trì `beam_width=3` trạng thái tốt nhất song song |
 | **Simulated Annealing** | `simulated_annealing_search.py` | Chấp nhận bước xấu theo xác suất `exp(-Δ/T)` giảm dần |
 
-> ⚠️ **Lưu ý:** Khi thất bại (`success=False`), các thuật toán Local Search vẫn hiển thị đường đi đã đi được (từ trạng thái bắt đầu đến nơi bị kẹt) và cho phép xem hoạt ảnh từng bước.
+> **Lưu ý:** Khi thất bại (`success=False`), các thuật toán Local Search vẫn hiển thị đường đi đã đi được (từ trạng thái bắt đầu đến nơi bị kẹt) và cho phép xem hoạt ảnh từng bước.
 
 ### 4. Complex Environments — Môi trường phức tạp
 
@@ -192,7 +192,7 @@ Chế độ **Người vs. Máy**: Máy sử dụng thuật toán để chọn n
 
 ---
 
-## 📁 Kiến trúc dự án
+## Kiến trúc dự án
 
 ### Cấu trúc thư mục
 
@@ -294,7 +294,7 @@ python Main.py
 
 ---
 
-## 📖 Hướng dẫn sử dụng
+## Hướng dẫn sử dụng
 
 ### Chế độ Normal (Tự động giải)
 
@@ -324,7 +324,7 @@ python Main.py
 
 ---
 
-## 📊 Kết quả thực nghiệm
+## Kết quả thực nghiệm
 
 ### Test Case mẫu (TC1)
 
@@ -367,10 +367,9 @@ Lời giải tối ưu: 9 bước
 
 ---
 
-## 🔮 Hướng phát triển
+## Hướng phát triển trong tương lai
 
 - [ ] Mở rộng lên 6-8 màu và 8-10 ống
-- [ ] Thêm thuật toán **MCTS (Monte Carlo Tree Search)**
 - [ ] Tự động **sinh trạng thái có lời giải** với độ khó tùy chọn
 - [ ] Giao diện **Web** (FastAPI + React)
 - [ ] So sánh với thuật toán **Q-Learning / Deep RL**
