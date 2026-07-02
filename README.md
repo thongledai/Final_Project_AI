@@ -85,7 +85,10 @@ goal = [
 ]
 ```
 
-**Bảng màu:** `1` = 🔴 Đỏ/Hồng · `2` = 🟡 Vàng · `3` = 🔵 Xanh dương
+**Bảng màu:** 
+`1` = 🔴 Đỏ · 
+`2` = 🟡 Vàng · 
+`3` = 🔵 Xanh dương
 
 ### Thông số cố định
 
@@ -261,7 +264,7 @@ Mọi thuật toán đều trả về object `Result` thống nhất:
 
 ---
 
-## ⚙️ Cài đặt & Chạy
+## Cài đặt & Chạy
 
 ### Yêu cầu hệ thống
 
